@@ -14,10 +14,43 @@ import { getFormacionesApi } from '../api/formacionService'; // API call
 import type { Formacion } from '../types/formacion'; // Tipo de datos
 import dayjs from 'dayjs'; // Librería para manejo fácil de fechas
 import customParseFormat from 'dayjs/plugin/customParseFormat'; // Plugin para parsear DD/MM/YYYY
+import MasIcon from '../assets/icons/mas.svg';
+import homeIcon from '../assets/icons/home.svg';
+import CalendarioIcon from '../assets/icons/calendario.svg';
+import CalendarioCard from '../assets/icons/CalendarioCards.svg';
+import ChevronDownIcon from '../assets/icons/ChevronDownIcon.svg';
+import ChevronForwardIcon from '../assets/icons/ChevronForwardIcon.svg';
+
+
+// --- Tipos ---
+interface TopHeaderButtonData {
+    id: keyof MainStackParamList;
+    title: string;
+    iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+}
+
+interface CalendarioData {
+    id: keyof MainStackParamList;
+    title: string;
+    iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+}
+
+// --- Datos ---
+const topHeaderButtons: TopHeaderButtonData[] = [
+    { id: 'Calendar', title: 'Calendario',  iconComponent: CalendarioIcon },
+    { id: 'Home', title: 'Inicio',  iconComponent: homeIcon },
+
+];
+
 
 // Importa Iconos SVG para el Header
-import HeaderIcon from '../assets/icons/calendario.svg';
-import HomeIcon from '../assets/icons/home.svg';
+// import HeaderIcon from '../assets/icons/calendario.svg';
+// import HomeIcon from '../assets/icons/home.svg';
+
+    // --- Renderizado ---
+  const headerIconSize = 60; // Tamaño iconos header superior
+  const gridIconSize = 90;  // Tamaño iconos cuadrícula
+  const gridPaddingHorizontal = 20;
 
 // Habilita LayoutAnimation y Dayjs plugin
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) { UIManager.setLayoutAnimationEnabledExperimental(true); }
@@ -100,7 +133,7 @@ const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) => {
   };
 
   // --- Renderizado de Componentes Internos ---
-  const renderCustomHeader = () => ( <View style={styles.customHeaderContainer}> <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}> <HeaderIcon width={28} height={28} fill="#0033A0" /> <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>FORMACIONES</Text> </View> <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.navigate('Home')}> <HomeIcon width={28} height={28} fill="#6C757D" /> <Text style={styles.customHeaderText}>Inicio</Text> </TouchableOpacity> </View> );
+  // const renderCustomHeader = () => ( <View style={styles.customHeaderContainer}> <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}> <HeaderIcon width={28} height={28} fill="#0033A0" /> <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>FORMACIONES</Text> </View> <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.navigate('Home')}> <HomeIcon width={28} height={28} fill="#6C757D" /> <Text style={styles.customHeaderText}>Inicio</Text> </TouchableOpacity> </View> );
  
   const renderEventItem = (item: Formacion, index: number) => (
     <TouchableOpacity key={item.id || `form-${index}`} style={styles.eventItem} onPress={() => handleEventPress(item)}>
@@ -112,10 +145,17 @@ const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) => {
     <View style={styles.sectionContainer}>
       <TouchableOpacity style={styles.sectionHeader} onPress={toggleFn} activeOpacity={0.7}>
         <View style={styles.headerLeft}>
-          <Ionicons name={iconName} size={24} color="#0033A0" style={styles.headerIcon} />
+          <View style={{ padding: 3 }}>
+          <CalendarioCard width={50} height={50}  fill="#0033A0" />
+          </View>
+          {/* <Ionicons name={iconName} size={24} color="#0033A0" style={styles.headerIcon} /> */}
           <Text style={styles.sectionTitle}>{title}</Text>
         </View>
-        <Ionicons name={isExpanded ? "chevron-down-outline" : "chevron-forward-outline"} size={24} color="#666" />
+       {isExpanded ?  (
+          <ChevronDownIcon width={24} height={24} fill="#666" />
+        ) : (
+          <ChevronForwardIcon width={24} height={24} fill="#666" />
+        )}
       </TouchableOpacity>
       {isExpanded && ( <View style={styles.sectionContent}>
           {events.length > 0 ? ( events.map(renderEventItem) ) : ( <Text style={styles.noDataText}>Datos no encontrados</Text> )}
@@ -127,8 +167,43 @@ const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF"/>
-        {renderCustomHeader()}
+        {/* {renderCustomHeader()} */}  
+        
+    {/* Header Superior (3 Botones) */}
+ <View style={styles.topHeaderContainer}>
+     {topHeaderButtons.map((button, index) => {
+       const Icon = button.iconComponent;
 
+       // Determinar estilos por posición
+       const isFirst = index === 0;
+       const isLast = index === topHeaderButtons.length - 1;
+
+       return (
+         <TouchableOpacity
+           key={button.id}
+           style={[
+             styles.topHeaderButton,
+             isFirst && styles.firstButton,
+             isLast && styles.lastButton,
+             !isFirst && !isLast && styles.middleButton
+           ]}
+           onPress={() => navigateTo(button.id)}
+           activeOpacity={0.7}
+         >
+              <Icon
+               width={headerIconSize}
+               height={headerIconSize}
+               fill={isFirst ? '#2c4391' : '#ffffff'}
+              />
+             <Text style={[
+               styles.topHeaderText,
+               isFirst && { color: '#000000' },
+               !isFirst && { color: '#ffffff' }
+              ]}>{button.title}</Text>
+         </TouchableOpacity>
+       );
+     })}
+   </View>
   
         {/* Contenido principal (Scroll si hay datos o si no está cargando/error) */}
         {(!isLoading || allFormaciones.length > 0) && !error && (
@@ -147,31 +222,119 @@ const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) => {
 
 // --- Estilos (Similares a los de CalendarScreen anterior, ajusta si es necesario) ---
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#DDE2E7' },
+        safeArea: {
+    flex: 1,
+    backgroundColor: '#3f4c53', // Fondo oscuro general
+  },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
     loadingText: { marginTop: 10, color: '#555', fontSize: 16, },
     errorText: { color: '#D8000C', textAlign: 'center', marginBottom: 15, fontSize: 16, },
     retryButton: { backgroundColor: '#0033A0', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 5, marginTop: 10, },
     retryButtonText: { color: '#FFFFFF', fontSize: 16, },
-    // --- Header Personalizado ---
-    customHeaderContainer: { flexDirection: 'row', backgroundColor: '#FFFFFF', paddingHorizontal: 5, paddingVertical: 8, margin: 10, borderRadius: 25, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, },
-    customHeaderButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 20, backgroundColor: '#E9ECEF', },
-    customHeaderButtonActive: { backgroundColor: '#FFFFFF', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 1.5, },
-    customHeaderText: { marginLeft: 8, fontSize: 14, fontWeight: 'bold', color: '#6C757D', },
-    customHeaderTextActive: { color: '#0033A0', },
+    
+    // --- Header Superior ---
+  topHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around', // Distribuye los 3 botones
+    alignItems: 'center',
+    backgroundColor: '#b1b1ae', // Fondo gris medio
+    // height: height * topHeaderHeightRatio, // Altura basada en ratio
+    borderRadius: 20, // Bordes redondeados
+    marginVertical: 16, // Espacio antes de la cuadrícula (valor fijo)
+    marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+  },
+  topHeaderButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 15, // Padding interno 
+    backgroundColor: '#c1c1c1', // Fondo gris claro para botones
+    borderRadius: 10, // Bordes redondeados
+  },
+  topHeaderText: {
+    color: '#FFFFFF', // Texto blanco
+    fontSize: 16, // Texto pequeño
+    fontWeight: '600',
+    marginTop: -14, // Espacio icono-texto
+  },
+   firstButton: {
+    backgroundColor: '#ffffff',
+    color: '#000000',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+  },
+  middleButton: {
+    backgroundColor: '#b1b1ae',
+
+  },
+  lastButton: {
+    backgroundColor: '#b1b1ae',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+  },
     // --- Contenido ---
     scrollContainer: { flex: 1, }, // Para que el ScrollView ocupe espacio
-    scrollContent: { padding: 15, paddingBottom: 30, },
-    sectionContainer: { backgroundColor: '#FFFFFF', borderRadius: 10, marginBottom: 15, overflow: 'hidden', shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.18, shadowRadius: 1.00, elevation: 1, },
-    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 15, paddingHorizontal: 15, borderBottomWidth: 1, borderBottomColor: '#F0F0F0', },
-    headerLeft: { flexDirection: 'row', alignItems: 'center', },
-    headerIcon: { marginRight: 12, },
-    sectionTitle: { fontSize: 17, fontWeight: '600', color: '#333', },
-    sectionContent: { paddingHorizontal: 15, paddingTop: 5, paddingBottom: 5, }, // Reducido padding top
-    eventItem: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F5F5F5', }, // Aumentado padding vertical
+    scrollContent: { 
+      padding: 15, 
+      paddingBottom: 30, 
+    },
+    sectionContainer: { 
+      backgroundColor: '#ececec', 
+      borderRadius: 10, 
+      marginBottom: 15, 
+      overflow: 'hidden', 
+      shadowColor: "#000", 
+      shadowOffset: { width: 0, height: 1 }, 
+      shadowOpacity: 0.18, 
+      shadowRadius: 1.00, 
+      elevation: 1, 
+    },
+    sectionHeader: { 
+      backgroundColor: '#FFFFFF',
+      flexDirection: 'row', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      paddingVertical: 15, 
+      paddingHorizontal: 15, 
+      marginTop: 20,
+      marginHorizontal: 20,
+      marginBottom: 0,
+      borderBottomWidth: 1, 
+      borderBottomColor: '#F0F0F0', 
+    },
+    headerLeft: { 
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      paddingRight: 50,
+    },
+    sectionTitle: { 
+      fontSize: 17, 
+      fontWeight: '600', 
+      color: '#333', 
+    },
+    sectionContent: { 
+      backgroundColor: '#FFFFFF',
+      paddingHorizontal: 15, 
+      paddingTop: 5, 
+      paddingBottom: 5, 
+      marginHorizontal: 20,
+      marginBottom: 20,
+    }, // Reducido padding top
+    eventItem: { 
+      paddingVertical: 12, 
+      borderBottomWidth: 1, 
+      borderBottomColor: '#222', 
+    }, // Aumentado padding vertical
     eventTitle: { fontSize: 15, color: '#444', marginBottom: 4, fontWeight: '500'}, // Un poco más de peso
     eventDate: { fontSize: 13, color: '#888', },
-    noDataText: { fontSize: 15, color: '#888', textAlign: 'center', paddingVertical: 20, fontStyle: 'italic', }, // Más padding
+    noDataText: { 
+      fontSize: 15, 
+      color: '#888', 
+      textAlign: 'center', 
+      paddingVertical: 20, 
+      fontStyle: 'italic',
+      borderBottomWidth: 1,   
+      borderBottomColor: '#222', 
+    }, // Más padding
 });
 
 export default CalendarScreen;

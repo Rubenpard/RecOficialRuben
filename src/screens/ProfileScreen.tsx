@@ -255,7 +255,7 @@ const UserTabScene: React.FC<UserTabSceneProps> = ({ userProfile, isLoading }) =
  );
 };
 
-const gridPaddingHorizontal = 20;
+const gridPaddingHorizontal = 15;
 
 const styles = StyleSheet.create({
 

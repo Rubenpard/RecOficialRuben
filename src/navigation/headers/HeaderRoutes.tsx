@@ -3,6 +3,8 @@ import React from 'react'; // Importación base de React
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Platform } from 'react-native';
 import MasIcon from '../assets/icons/mas.svg';
 import homeIcon from '../assets/icons/home.svg';
+import type { User } from '../types/api/auth';// --- Importa Iconos SVG para el Header Superior ---
+
 
 interface TopHeaderButtonData {
     id: keyof MainStackParamList;
@@ -16,6 +18,10 @@ const topHeaderButtons: TopHeaderButtonData[] = [
     { id: 'Calendar', title: 'Inicio',  iconComponent: homeIcon },
 
 ];
+
+    // --- Renderizado ---
+  const headerIconSize = 60; // Tamaño iconos header superior
+  const gridIconSize = 90;  // Tamaño iconos cuadrícula
 
 return (
 

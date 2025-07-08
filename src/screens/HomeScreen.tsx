@@ -132,8 +132,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 const { width, height } = Dimensions.get('window');
 // Distribución de altura (aproximada, ajustar según necesidad)
 const topHeaderHeightRatio = 0.15; // 15% para el header superior
-const gridPaddingVertical = 20;
-const gridPaddingHorizontal = 20;
+const gridPaddingVertical = 15;
+const gridPaddingHorizontal = 15;
 const gridAvailableHeight = height * (1 - topHeaderHeightRatio) - (gridPaddingVertical * 2) - (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0) - 60; // Restar aprox. StatusBar y espacio inferior
 
 // Cálculo para cuadrícula (asumiendo 3 filas, 2 columnas)
