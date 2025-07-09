@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around', // Distribuye los 3 botones
     alignItems: 'center',
-    backgroundColor: '#b1b1ae', // Fondo gris medio
+    experimental_backgroundImage: 'linear-gradient(to right, #b1b1ae, #9c9c9c)',
     // height: height * topHeaderHeightRatio, // Altura basada en ratio
     borderRadius: 20, // Bordes redondeados
     marginVertical: gridPaddingVertical, // Espacio antes de la cuadrícula

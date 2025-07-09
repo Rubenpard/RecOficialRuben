@@ -7,7 +7,7 @@ import type { MainStackParamList } from '../MainStackNavigator'; // Tipos del St
 import Ionicons from 'react-native-vector-icons/Ionicons';
 // --- Importa Iconos SVG para las pestañas ---
 // Asegúrate que las rutas sean correctas (desde src/navigation/headers/ -> ../../)
-import MPerfilIcon from '../../assets/icons/miperfilHome.svg';
+
 import CalendarioIcon from '../../assets/icons/calendario.svg';
 import PromoIcon from '../../assets/icons/promoHome.svg';
 import HomeIcon from '../../assets/icons/home.svg'; // Asume que existe home.svg

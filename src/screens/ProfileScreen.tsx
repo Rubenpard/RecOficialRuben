@@ -18,6 +18,7 @@ import CalendarioIcon from '../assets/icons/calendario.svg';
 import PromoIcon from '../assets/icons/promoHome.svg';
 import MasIcon from '../assets/icons/mas.svg';
 import homeIcon from '../assets/icons/home.svg';
+import LogOutIcon from '../assets/icons/logout.svg';  
 
 // --- Tipos ---
 // Asegúrate de importar MainStackParamList desde donde esté definido, por ejemplo:
@@ -236,7 +237,7 @@ const UserTabScene: React.FC<UserTabSceneProps> = ({ userProfile, isLoading }) =
            activeOpacity={0.7}
          >
            <Text style={styles.actionButtonText}>Cerrar sesión</Text>
-           <Ionicons name="log-out-outline" size={20} color="#FFFFFF" style={styles.logoutIcon} />
+           <LogOutIcon width={30} height={30} style={styles.logoutIcon} fill="#FFFFFF" />
          </TouchableOpacity>
        </View>
        <View style={styles.butoonContainer} >
@@ -351,6 +352,7 @@ const styles = StyleSheet.create({
       flexGrow: 1,
     },
     fieldContainer: {
+    experimental_backgroundImage: 'linear-gradient(to bottom, #e7e7e7, #ffffff)',
     },
     fieldLabel: {
       fontSize: 13,
@@ -359,17 +361,16 @@ const styles = StyleSheet.create({
       fontWeight: '500',
     },
     fieldValueContainer: { 
-      backgroundColor: '#FFFFFF', 
       paddingHorizontal: 14, 
       borderRadius: 6, 
       borderWidth: 1, 
       borderColor: '#E0E0E0', 
-      minHeight: 48, 
+      minHeight: 48,  
       justifyContent: 'center', 
     },
     fieldValueText: { 
       fontSize: 16, 
-      color: '#333', 
+      color: '#333',
     },
     
     textInput: { 
@@ -379,7 +380,7 @@ const styles = StyleSheet.create({
       borderColor: '#B0B0B0', 
       borderRadius: 6, 
       paddingHorizontal: 14, 
-      backgroundColor: '#FFFFFF', 
+      experimental_backgroundImage: 'linear-gradient(to bottom, #e7e7e7, #ffffff)',
       minHeight: 48, 
       top: 0,
     },

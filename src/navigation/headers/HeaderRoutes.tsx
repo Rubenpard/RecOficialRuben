@@ -1,10 +1,25 @@
 // src/navigation/headers/HeaderRoutes.tsx
-import React from 'react'; // Importación base de React
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Platform } from 'react-native';
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  Dimensions,
+} from 'react-native';
+import type { MainStackParamList } from '../types/navigation';
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import PromoIcon from '../assets/icons/promoHome.svg';
 import MasIcon from '../assets/icons/mas.svg';
 import homeIcon from '../assets/icons/home.svg';
-import type { User } from '../types/api/auth';// --- Importa Iconos SVG para el Header Superior ---
+import LogOutIcon from '../assets/icons/logout.svg'; 
 
+// Tamaños y paddings
+const headerIconSize = 60;
+const gridPaddingVertical = 20;
+const gridPaddingHorizontal = 16;
 
 interface TopHeaderButtonData {
     id: keyof MainStackParamList;
@@ -12,56 +27,92 @@ interface TopHeaderButtonData {
     iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
 }
 
-// --- Datos ---
-const topHeaderButtons: TopHeaderButtonData[] = [
-    { id: 'Profile', title: 'Mi Perfil',  iconComponent: MPerfilIcon },
-    { id: 'Calendar', title: 'Inicio',  iconComponent: homeIcon },
+const HeaderRoutes = () => {
+  const navigation = useNavigation<StackNavigationProp<MainStackParamList>>();
 
-];
+  // --- Datos ---
+  const topHeaderButtons = [
+    { id: 'Profile', title: 'Mi Perfil', iconComponent: MPerfilIcon },
+    { id: 'Calendar', title: 'Inicio', iconComponent: HomeIcon },
+  ];
 
-    // --- Renderizado ---
-  const headerIconSize = 60; // Tamaño iconos header superior
-  const gridIconSize = 90;  // Tamaño iconos cuadrícula
+  const navigateTo = (screen: keyof MainStackParamList) => {
+    navigation.navigate(screen);
+  };
 
-return (
-
+  return (
     <View style={styles.safeArea}>
-    {/* Header Superior (3 Botones) */}
-    <View style={styles.topHeaderContainer}>
-      {topHeaderButtons.map((button, index) => {
-        const Icon = button.iconComponent;
+      <View style={styles.topHeaderContainer}>
+        {topHeaderButtons.map((button, index) => {
+          const Icon = button.iconComponent;
+          const isFirst = index === 0;
+          const isLast = index === topHeaderButtons.length - 1;
 
-        // Determinar estilos por posición
-        const isFirst = index === 0;
-        const isLast = index === topHeaderButtons.length - 1;
-
-        return (
+          return (
             <TouchableOpacity
-                key={button.id}
+              key={button.id}
+              style={[
+                styles.topHeaderButton,
+                isFirst && styles.firstButton,
+                isLast && styles.lastButton,
+                !isFirst && !isLast && styles.middleButton,
+              ]}
+              onPress={() => navigateTo(button.id)}
+              activeOpacity={0.7}
+            >
+              <Icon
+                width={headerIconSize}
+                height={headerIconSize}
+                fill={isFirst ? '#2c4391' : '#ffffff'}
+              />
+              <Text
                 style={[
-                    styles.topHeaderButton,
-                    isFirst && styles.firstButton,
-                    isLast && styles.lastButton,
-                    !isFirst && !isLast && styles.middleButton
+                  styles.topHeaderText,
+                  isFirst && { color: '#000000' },
+                  !isFirst && { color: '#ffffff' },
                 ]}
-                onPress={() => navigateTo(button.id)}
-                activeOpacity={0.7}
-                >
-                    <Icon
-                    width={headerIconSize}
-                    height={headerIconSize}
-                    fill={isFirst ? '#2c4391' : '#ffffff'}
-                    />
-                    <Text style={[
-                    styles.topHeaderText,
-                    isFirst && { color: '#000000' },
-                    !isFirst && { color: '#ffffff' }
-                    ]}>{button.title}</Text>
-                </TouchableOpacity>
-            );
+              >
+                {button.title}
+              </Text>
+            </TouchableOpacity>
+          );
         })}
-        </View>
+      </View>
     </View>
-    );
+  );
+};
+
+const styles = StyleSheet.create({
+  safeArea: {
+    paddingTop: Platform.OS === 'android' ? 25 : 0,
+    backgroundColor: '#f2f2f2',
+  },
+  topHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#b1b1ae',
+    borderRadius: 20,
+    marginVertical: gridPaddingVertical,
+    marginHorizontal: gridPaddingHorizontal,
+    padding: 10,
+  },
+  topHeaderButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#c1c1c1',
+    borderRadius: 10,
+    marginHorizontal: 5,
+  },
+  topHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: -14,
+  },
+  firstButton: {},
+  middleButton: {},
+  lastButton: {},
+});
 
 export default HeaderRoutes;
