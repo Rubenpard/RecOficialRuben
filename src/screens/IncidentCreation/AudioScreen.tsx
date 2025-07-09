@@ -13,6 +13,14 @@ import { useIncidentCreation } from '../../context/IncidentCreationContext';
 import uuid from 'react-native-uuid'; // Necesario para nombre de archivo en stopRecord
 import ExpresIcon from '../../assets/icons/expres.svg'; // Ajusta ruta
 import HomeIcon from '../../assets/icons/home.svg';     // Ajusta ruta
+import AudioIcon from '../../assets/icons/audio.svg';
+import MPerfilIcon from '../../assets/icons/usuarioSvg.svg';
+import SiguienteIcon from '../../assets/icons/siguiente.svg';
+import VolverIcon from '../../assets/icons/volver.svg';
+
+  const gridPaddingVertical = 15;
+  const gridPaddingHorizontal = 15;
+
 type AudioScreenProps = NativeStackScreenProps<IncidentCreationStackParamList, 'IncidentAudio'>;
 
 const audioRecorderPlayer = new AudioRecorderPlayer();
@@ -27,6 +35,24 @@ const AudioScreen: React.FC<AudioScreenProps> = ({ navigation }) => {
   const [recordSecs, setRecordSecs] = useState<number>(0);
   const [recordTime, setRecordTime] = useState<string>(audioRecorderPlayer.mmss(MAX_RECORD_DURATION_SEC));
   const [isNextEnabled, setIsNextEnabled] = useState<boolean>(!!audioAsset);
+
+
+    // --- Renderizado ---
+  const headerIconSize = 60; // Tamaño iconos header superior
+  const gridIconSize = 90;  // Tamaño iconos cuadrícula
+
+  interface TopHeaderButtonData {
+      id: keyof MainStackParamList;
+      title: string;
+      iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+  }
+  
+  // --- Datos ---
+  const topHeaderButtons: TopHeaderButtonData[] = [
+      { id: 'Profile', title: 'Mi Perfil',  iconComponent: MPerfilIcon },
+      { id: 'Calendar', title: 'Inicio',  iconComponent: HomeIcon },
+  
+  ];
 
   useEffect(() => {
     return () => {
@@ -92,34 +118,73 @@ const AudioScreen: React.FC<AudioScreenProps> = ({ navigation }) => {
   const displayTime = isRecording ? audioRecorderPlayer.mmss(remainingTime >= 0 ? remainingTime : 0) : audioRecorderPlayer.mmss(MAX_RECORD_DURATION_SEC);
 
   // --- Renderizado del Header Interno ---
-  const renderCustomHeader = () => (
-    <View style={styles.customHeaderContainer}>
-         <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}>
-             <ExpresIcon width={28} height={28} fill="#0033A0" />
-             <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>Exprés</Text>
-         </View>
-         <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.getParent()?.navigate('Home')}>
-             <HomeIcon width={28} height={28} fill="#6C757D" />
-             <Text style={styles.customHeaderText}>Inicio</Text>
-         </TouchableOpacity>
-    </View>
-  );
+  // const renderCustomHeader = () => (
+  //   <View style={styles.customHeaderContainer}>
+  //        <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}>
+  //            <ExpresIcon width={28} height={28} fill="#0033A0" />
+  //            <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>Exprés</Text>
+  //        </View>
+  //        <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.getParent()?.navigate('Home')}>
+  //            <HomeIcon width={28} height={28} fill="#6C757D" />
+  //            <Text style={styles.customHeaderText}>Inicio</Text>
+  //        </TouchableOpacity>
+  //   </View>
+  // );
 
 
   // --- Renderizado Principal ---
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#F0F2F5"/>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+         {/* Header Superior (3 Botones) */}
+                 <View style={styles.topHeaderContainer}>
+                   {topHeaderButtons.map((button, index) => {
+                     const Icon = button.iconComponent;
+              
+                     // Determinar estilos por posición
+                     const isFirst = index === 0;
+                     const isLast = index === topHeaderButtons.length - 1;
+              
+                     return (
+                       <TouchableOpacity
+                         key={button.id}
+                         style={[
+                           styles.topHeaderButton,
+                           isFirst && styles.firstButton,
+                           isLast && styles.lastButton,
+                           !isFirst && !isLast && styles.middleButton
+                         ]}
+                         onPress={() => navigateTo(button.id)}
+                         activeOpacity={0.7}
+                       >
+                            <Icon
+                             width={headerIconSize}
+                             height={headerIconSize}
+                             fill={isFirst ? '#2c4391' : '#ffffff'}
+                            />
+                           <Text style={[
+                             styles.topHeaderText,
+                             isFirst && { color: '#000000' },
+                             !isFirst && { color: '#ffffff' }
+                            ]}>{button.title}</Text>
+                       </TouchableOpacity>
+                     );
+                   })}
+                 </View>
         {/* Tarjeta Blanca de Contenido */}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.contentCard}>
           {/* Sección Superior */}
           <View style={styles.headerSection}>
-            <Ionicons name="mic-circle-outline" size={80} color="#0033A0" />
+            <View>
+            <AudioIcon width={80} height={80} />
+            </View>
+            <View>
             <Text style={styles.cardTitle}>Audio</Text>
             <Text style={styles.description}>
               Envíanos una nota de audio, coméntanos el problema y tus comprobaciones. Cuentas con {MAX_RECORD_DURATION_SEC} segundos.
             </Text>
+            </View>
           </View>
 
           {/* Botón de Grabar / Detener */}
@@ -138,7 +203,7 @@ const AudioScreen: React.FC<AudioScreenProps> = ({ navigation }) => {
               <View style={styles.playbackSection}>
                   <Text style={styles.infoText}>Audio grabado.</Text>
                   <TouchableOpacity onPress={() => { updateField('audioAsset', null); setIsNextEnabled(false); }}>
-                      <Ionicons name="trash-outline" size={24} color="#DC3545" />
+                      <AudioIcon width={30} height={30} fill="#28a745" />
                   </TouchableOpacity>
               </View>
           )}
@@ -146,12 +211,12 @@ const AudioScreen: React.FC<AudioScreenProps> = ({ navigation }) => {
           {/* Footer de la Tarjeta (con botones Anterior/Siguiente) */}
           <View style={styles.cardFooter}>
              <TouchableOpacity style={styles.navigationButton} onPress={handlePrevious}>
-                <Ionicons name="arrow-back-outline" size={24} color="#0033A0" />
+                <VolverIcon width={50} height={50} fill="#0033A0" />
                 <Text style={styles.navigationButtonText}>Anterior</Text>
              </TouchableOpacity>
              <TouchableOpacity style={[styles.navigationButton, !isNextEnabled && styles.navigationButtonDisabled]} onPress={handleNext} disabled={!isNextEnabled} >
                  <Text style={[styles.navigationButtonText, !isNextEnabled && styles.navigationButtonTextDisabled]}>Siguiente</Text>
-                 <Ionicons name="arrow-forward-outline" size={24} color={isNextEnabled ? "#0033A0" : "#A0A0A0"} />
+                 <SiguienteIcon width={50} height={50} color={isNextEnabled ? "#0033A0" : "#A0A0A0"} />
              </TouchableOpacity>
           </View>
         </View>
@@ -162,22 +227,113 @@ const AudioScreen: React.FC<AudioScreenProps> = ({ navigation }) => {
 
 // --- Estilos (Usa los mismos estilos que DocumentationScreen para safeArea, customHeader..., contentCard, cardFooter, etc.) ---
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#F0F2F5', },
+    safeArea: { 
+      flex: 1, 
+      backgroundColor: '#3f4c53', 
+    },
     customHeaderContainer: { flexDirection: 'row', backgroundColor: '#FFFFFF', paddingHorizontal: 5, paddingVertical: 8, marginHorizontal: 10, marginTop: Platform.OS === 'android' ? 10 : 0, marginBottom: 5, borderRadius: 25, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, },
+    
+      // --- Header Superior ---
+  topHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around', // Distribuye los 3 botones
+    alignItems: 'center',
+    backgroundColor: '#b1b1ae', // Fondo gris medio
+    // height: height * topHeaderHeightRatio, // Altura basada en ratio
+    borderRadius: 20, // Bordes redondeados
+    marginVertical: 16, // Espacio antes de la cuadrícula (valor fijo)
+    marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+  },
+  topHeaderButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 20, // Padding interno 
+    backgroundColor: '#c1c1c1', // Fondo gris claro para botones
+    borderRadius: 10, // Bordes redondeados
+  },
+  topHeaderText: {
+    color: '#FFFFFF', // Texto blanco
+    fontSize: 16, // Texto pequeño
+    fontWeight: '600',
+    marginTop: -14, // Espacio icono-texto
+  },
+   firstButton: {
+    backgroundColor: '#ffffff',
+    color: '#000000',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+  },
+  middleButton: {
+    backgroundColor: '#b1b1ae',
+
+  },
+  lastButton: {
+    backgroundColor: '#b1b1ae',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+
     customHeaderButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 20, backgroundColor: '#E9ECEF', },
     customHeaderButtonActive: { backgroundColor: '#FFFFFF', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 1.5, },
     customHeaderText: { marginLeft: 8, fontSize: 14, fontWeight: 'bold', color: '#6C757D', },
     customHeaderTextActive: { color: '#0033A0', },
     scrollContainer: { flexGrow: 1, padding: 15, paddingTop: 10, },
-    contentCard: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 15, padding: 20, paddingBottom: 10, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, },
+    contentCard: { 
+      flex: 1, 
+      backgroundColor: '#FFFFFF', 
+      borderRadius: 15, 
+      padding: 20, 
+      paddingBottom: 10, 
+      elevation: 4, 
+      shadowColor: '#000', 
+      shadowOffset: { width: 0, height: 2 }, 
+      shadowOpacity: 0.15, 
+      shadowRadius: 4, },
     // --- Estilos específicos de AudioScreen ---
-    headerSection: { alignItems: 'center', marginBottom: 30, }, // Menos margen que DocScreen
-    cardTitle: { fontSize: 22, fontWeight: 'bold', color: '#0033A0', marginTop: 15, marginBottom: 10, },
-    description: { fontSize: 15, color: '#555', textAlign: 'center', lineHeight: 22, marginBottom: 30, }, // Más margen
-    recordButton: { flexDirection: 'row', backgroundColor: '#0033A0', paddingVertical: 18, paddingHorizontal: 30, borderRadius: 30, alignItems: 'center', justifyContent: 'center', minWidth: '80%', shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, },
+    headerSection: {  
+      marginBottom: 30,
+      flexDirection: 'row',  
+    }, // Menos margen que DocScreen
+
+    cardTitle: { 
+      fontSize: 22, 
+      fontWeight: 'bold', 
+      color: '#0033A0', 
+      marginTop: 15,
+      marginBottom: 10, 
+    },
+    description: { 
+      fontSize: 15, 
+      color: '#555', 
+      lineHeight: 22, 
+      marginBottom: 30,
+      paddingHorizontal: 15, 
+      paddingRight: 50, 
+    }, // Más margen
+    recordButton: { 
+      flexDirection: 'row', 
+      backgroundColor: '#0033A0', 
+      paddingVertical: 18, 
+      paddingHorizontal: 30, 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      minWidth: '80%', 
+      shadowColor: "#000", 
+      shadowOffset: { width: 0, height: 2 }, 
+      shadowOpacity: 0.25, 
+      shadowRadius: 3.84, 
+      elevation: 5, 
+      borderTopLeftRadius: 20,
+      borderBottomLeftRadius: 20,
+      marginRight: -20,},
     recordingButton: { backgroundColor: '#DC3545', },
     buttonIcon: { marginRight: 10, },
-    recordButtonText: { color: '#FFFFFF', fontSize: 17, fontWeight: 'bold', marginRight: 15, },
+    recordButtonText: { 
+      color: '#FFFFFF', 
+      fontSize: 17, 
+      fontWeight: 'bold', 
+      marginRight: 15, 
+    },
     timerText: { color: '#FFFFFF', fontSize: 17, fontWeight: 'bold', minWidth: 50, textAlign: 'right', },
     playbackSection: { marginTop: 25, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
     infoText:{ fontSize: 15, color: '#28a745', marginRight: 10, },

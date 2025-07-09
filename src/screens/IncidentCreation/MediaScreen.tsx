@@ -9,10 +9,13 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { IncidentCreationStackParamList } from '../../navigation/IncidentCreationStackNavigator';
 import { useIncidentCreation } from '../../context/IncidentCreationContext';
-import { useAuth } from '../../context/AuthContext'; // Ajusta ruta (una carpeta arriba desde /src/screens/IncidentCreation)
+import { useAuth } from '../../context/AuthContext'; 
 import uuid from 'react-native-uuid';
 import RNFS from 'react-native-fs';
-import { createIncidentExpressApi } from '../../api/incidenciasService'; // Ajusta ruta
+import { createIncidentExpressApi } from '../../api/incidenciasService';
+import MobileIcon from '../../assets/icons/mobile.svg';
+import SiguienteIcon from '../../assets/icons/siguiente.svg';
+import VolverIcon from '../../assets/icons/volver.svg';
 
 // --- Importa Iconos SVG para el Header ---
 import ExpresIcon from '../../assets/icons/expres.svg'; // Ajusta ruta
@@ -85,18 +88,22 @@ const MediaScreen: React.FC<MediaScreenProps> = ({ navigation }) => {
   };
 
   // --- Renderizado del Header Interno ---
-  const renderCustomHeader = () => ( <View style={styles.customHeaderContainer}> <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}> <ExpresIcon width={28} height={28} fill="#0033A0" /> <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>Exprés</Text> </View> <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.getParent()?.navigate('Home')}> <HomeIcon width={28} height={28} fill="#6C757D" /> <Text style={styles.customHeaderText}>Inicio</Text> </TouchableOpacity> </View> );
+  const renderCustomHeader = () => ( <View style={styles.customHeaderContainer}> <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}> <ExpresIcon width={28} height={28} fill="#0033A0" /> 
+  <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>Exprés</Text> </View> <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.getParent()?.navigate('Home')}> <HomeIcon width={28} height={28} fill="#6C757D" /> <Text style={styles.customHeaderText}>Inicio</Text> </TouchableOpacity> </View> );
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#F0F2F5"/>
-      {renderCustomHeader()}
       <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
         <View style={styles.contentCard}>
           <View style={styles.headerSection}>
-            <Ionicons name="images-outline" size={70} color="#0033A0" />
-            <Text style={styles.cardTitle}>Fotos / Vídeo (Opcional)</Text>
-            <Text style={styles.description}> Adjunta una foto o vídeo adicional si es necesario. </Text>
+            <View>
+              <MobileIcon width={100} height={100} />
+            </View>
+            <View>
+              <Text style={styles.cardTitle}>Fotos / Vídeo (Opcional)</Text>
+              <Text style={styles.description}> Adjunta una foto o vídeo adicional si es necesario. </Text>
+           </View>
           </View>
           <TouchableOpacity style={styles.actionButton} onPress={handleTakeMedia} activeOpacity={0.7}> <Ionicons name="camera-outline" size={24} color="#FFFFFF" style={styles.buttonIcon}/> <Text style={styles.actionButtonText}>Hacer Foto / Vídeo</Text> </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton} onPress={handleBrowseMedia} activeOpacity={0.7}> <Ionicons name="folder-open-outline" size={24} color="#FFFFFF" style={styles.buttonIcon}/> <Text style={styles.actionButtonText}>Buscar en Galería</Text> </TouchableOpacity>
@@ -104,9 +111,12 @@ const MediaScreen: React.FC<MediaScreenProps> = ({ navigation }) => {
           {mediaAsset && ( <View style={styles.previewArea}> <Text style={styles.previewText}>Adjunto:</Text> <View style={styles.previewItem}> {mediaAsset.type?.startsWith('video/') ? ( <Ionicons name="film-outline" size={30} color="#555" style={styles.previewImage} /> ) : ( <Image source={{ uri: mediaAsset.uri }} style={styles.previewImage} resizeMode="cover" /> )} <View style={styles.previewDetails}><Text style={styles.previewFileName} numberOfLines={1}> {mediaAsset.fileName || (mediaAsset.type?.startsWith('video/') ? 'Vídeo' : 'Archivo')} </Text>{mediaAsset.type && <Text style={styles.previewFileType}>{mediaAsset.type}</Text>}</View> <TouchableOpacity onPress={removeMediaFile} style={styles.removeButton}> <Ionicons name="close-circle" size={28} color="#DC3545" /> </TouchableOpacity> </View> </View> )}
 
           <View style={styles.cardFooter}>
-             <TouchableOpacity style={styles.navigationButton} onPress={handlePrevious}> <Ionicons name="arrow-back-outline" size={24} color="#0033A0" /> <Text style={styles.navigationButtonText}>Anterior</Text> </TouchableOpacity>
-             <TouchableOpacity style={[styles.navigationButton, styles.finishButton, isSubmitting && styles.actionButtonDisabled]} onPress={handleFinish} disabled={isSubmitting} >
-                {isSubmitting ? ( <ActivityIndicator color="#FFFFFF" size="small" style={{marginRight: 5}}/> ) : ( <Ionicons name="checkmark-circle-outline" size={26} color="#FFFFFF" style={{marginRight: 5}}/> )}
+             <TouchableOpacity style={styles.navigationButton} onPress={handlePrevious}>
+              <VolverIcon width={50} height={50}/>
+             <Text style={styles.navigationButtonText}>Anterior</Text> 
+             </TouchableOpacity>
+             <TouchableOpacity onPress={handleFinish} disabled={isSubmitting} >
+                {isSubmitting ? ( <SiguienteIcon width={50} height={50} style={{marginRight: 5}}/> ) : ( <SiguienteIcon width={50} height={50} style={{marginRight: 5}}/> )}
                 <Text style={[styles.navigationButtonText, styles.finishButtonText]}> {isSubmitting ? 'Enviando...' : 'Finalizar'} </Text>
              </TouchableOpacity>
           </View>
@@ -118,7 +128,10 @@ const MediaScreen: React.FC<MediaScreenProps> = ({ navigation }) => {
 
 // --- Estilos (Igual que DocumentationScreen, con .finishButton y .actionButtonDisabled) ---
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#F0F2F5', },
+    safeArea: { 
+      flex: 1, 
+      backgroundColor: '#3f4c53',
+    },
     customHeaderContainer: { flexDirection: 'row', backgroundColor: '#FFFFFF', paddingHorizontal: 5, paddingVertical: 8, marginHorizontal: 10, marginTop: Platform.OS === 'android' ? 10 : 0, marginBottom: 5, borderRadius: 25, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, },
     customHeaderButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 20, backgroundColor: '#E9ECEF', },
     customHeaderButtonActive: { backgroundColor: '#FFFFFF', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 1.5, },
@@ -126,9 +139,26 @@ const styles = StyleSheet.create({
     customHeaderTextActive: { color: '#0033A0', },
     scrollContainer: { flexGrow: 1, padding: 15, paddingTop: 10, },
     contentCard: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 15, padding: 20, paddingBottom: 10, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, },
-    headerSection: { alignItems: 'center', marginBottom: 25, },
-    cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#0033A0', marginTop: 15, marginBottom: 8, textAlign: 'center' },
-    description: { fontSize: 15, color: '#555', textAlign: 'center', lineHeight: 21, marginBottom: 20, },
+    headerSection: { 
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 25, 
+      },
+    cardTitle: { 
+      fontSize: 20, 
+      fontWeight: 'bold', 
+      color: '#0033A0',
+       marginTop: 15, 
+       marginBottom: 8, 
+      },
+    description: {
+      fontSize: 15,
+      color: '#555', 
+      lineHeight: 21, 
+      marginBottom: 20,
+      paddingHorizontal: 15, 
+      paddingRight: 120,  
+    },
     actionButton: { flexDirection: 'row', backgroundColor: '#0033A0', paddingVertical: 14, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginBottom: 12, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, },
     actionButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold', marginLeft: 10, },
     buttonIcon: {},
@@ -145,6 +175,6 @@ const styles = StyleSheet.create({
     navigationButton: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 15, borderRadius: 20, },
     navigationButtonText: { fontSize: 17, fontWeight: '600', color: '#0033A0', marginHorizontal: 5, },
     finishButton: { backgroundColor: '#28a745', },
-    finishButtonText: { color: '#FFFFFF', },
+    finishButtonText: {  },
 });
 export default MediaScreen;
