@@ -10,16 +10,37 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { IncidentCreationStackParamList } from '../../navigation/IncidentCreationStackNavigator';
 import { useIncidentCreation } from '../../context/IncidentCreationContext';
 
+
 // --- Importa Iconos SVG para el Header ---
-import ExpresIcon from '../../assets/icons/expres.svg'; // Ajusta ruta desde src/screens/IncidentCreation/
-import HomeIcon from '../../assets/icons/home.svg';     // Ajusta ruta
+import MPerfilIcon from '../../assets/icons/usuarioSvg.svg';
+import ExpresIcon from '../../assets/icons/expres.svg';
+import HomeIcon from '../../assets/icons/home.svg';
+import CameraIcon from '../../assets/icons/camera.svg';
+import PicturesIcon from '../../assets/icons/pictures.svg';
+import SiguienteIcon from '../../assets/icons/siguiente.svg';
 // --- ---
 
+const gridPaddingVertical = 15;
+const gridPaddingHorizontal = 15;
+    // --- Renderizado ---
+  const headerIconSize = 60; // Tamaño iconos header superior
+  const gridIconSize = 90;  // Tamaño iconos cuadrícula
+
+
+interface TopHeaderButtonData {
+    id: keyof MainStackParamList;
+    title: string;
+    iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+}
+
+// --- Datos ---
+const topHeaderButtons: TopHeaderButtonData[] = [
+    { id: 'Profile', title: 'Mi Perfil',  iconComponent: MPerfilIcon },
+    { id: 'Calendar', title: 'Inicio',  iconComponent: HomeIcon },
+
+];
+
 // Placeholder para la ilustración interna
-const docIllustration = null; // O require('../../../assets/images/doc_illustration.png');
-
-type DocumentationScreenProps = NativeStackScreenProps<IncidentCreationStackParamList, 'IncidentDoc'>;
-
 const DocumentationScreen: React.FC<DocumentationScreenProps> = ({ navigation }) => {
   const { incidentData, updateField } = useIncidentCreation();
   const { matricula, docAsset } = incidentData;
@@ -78,34 +99,70 @@ const DocumentationScreen: React.FC<DocumentationScreenProps> = ({ navigation })
 
   const handleNext = () => { if (!isNextEnabled) return; navigation.navigate('IncidentAudio'); };
 
-  const renderCustomHeader = () => (
-    <View style={styles.customHeaderContainer}>
-         <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}>
-             <ExpresIcon width={28} height={28} fill="#0033A0" />
-             <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>Exprés</Text>
-         </View>
-         <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.getParent()?.navigate('Home')}>
-             <HomeIcon width={28} height={28} fill="#6C757D" />
-             <Text style={styles.customHeaderText}>Inicio</Text>
-         </TouchableOpacity>
-    </View>
-  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#F0F2F5"/>
-      {renderCustomHeader()}
+         {/* Header Superior (3 Botones) */}
+         <View style={styles.topHeaderContainer}>
+           {topHeaderButtons.map((button, index) => {
+             const Icon = button.iconComponent;
+      
+             // Determinar estilos por posición
+             const isFirst = index === 0;
+             const isLast = index === topHeaderButtons.length - 1;
+      
+             return (
+               <TouchableOpacity
+                 key={button.id}
+                 style={[
+                   styles.topHeaderButton,
+                   isFirst && styles.firstButton,
+                   isLast && styles.lastButton,
+                   !isFirst && !isLast && styles.middleButton
+                 ]}
+                 onPress={() => navigateTo(button.id)}
+                 activeOpacity={0.7}
+               >
+                    <Icon
+                     width={headerIconSize}
+                     height={headerIconSize}
+                     fill={isFirst ? '#2c4391' : '#ffffff'}
+                    />
+                   <Text style={[
+                     styles.topHeaderText,
+                     isFirst && { color: '#000000' },
+                     !isFirst && { color: '#ffffff' }
+                    ]}>{button.title}</Text>
+               </TouchableOpacity>
+             );
+           })}
+         </View>
       <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
         <View style={styles.contentCard}>
           <View style={styles.headerSection}>
-            {docIllustration ? ( <Image source={docIllustration} style={styles.illustration} resizeMode="contain"/> )
-             : ( <View style={styles.illustrationPlaceholder}> <Ionicons name="document-attach-outline" size={50} color="#A0B5D3" /> </View> )}
-            <Text style={styles.cardTitle}>Documentación</Text>
-            <Text style={styles.description}> Haz una foto a la Ficha Técnica/Permiso de Circulación O introduce la matrícula. </Text>
+            <View>
+            <Image
+                source={require('../../assets/images/documentacion.png')}
+               style={styles.illustration}
+            />
+            </View>
+            <View style={styles.textContent}>
+              <Text style={styles.cardTitle}>Documentación</Text>
+              <Text style={styles.description}> Haz una foto a la Ficha Técnica/Permiso de Circulación O introduce la matrícula. </Text>
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
-             <View style={styles.matriculaPrefix}><Text style={styles.matriculaPrefixText}>E</Text></View>
+             <View style={styles.matriculaPrefix}>
+                 <Image
+                  source={require('../../assets/images/banderaUe.png')}
+                  style={styles.bandera}
+                />
+               <Text style={styles.matriculaPrefixText}>
+                E
+                </Text>
+              </View>
              <TextInput
                 style={styles.inputMatricula}
                 placeholder="Introduce Matrícula"
@@ -120,7 +177,7 @@ const DocumentationScreen: React.FC<DocumentationScreenProps> = ({ navigation })
             style={[styles.actionButton, !!matricula?.trim() && styles.actionButtonDisabled]}
             onPress={handleTakePhoto} activeOpacity={0.7} disabled={!!matricula?.trim()}
           >
-            <Ionicons name="camera-outline" size={24} color="#FFFFFF" style={styles.buttonIcon}/>
+            <CameraIcon width={50} height={50} />
             <Text style={styles.actionButtonText}>Hacer Foto</Text>
           </TouchableOpacity>
 
@@ -128,7 +185,7 @@ const DocumentationScreen: React.FC<DocumentationScreenProps> = ({ navigation })
             style={[styles.actionButton, !!matricula?.trim() && styles.actionButtonDisabled]}
             onPress={handleBrowseFiles} activeOpacity={0.7} disabled={!!matricula?.trim()}
           >
-            <Ionicons name="folder-open-outline" size={24} color="#FFFFFF" style={styles.buttonIcon}/>
+            <PicturesIcon width={50} height={50} />
             <Text style={styles.actionButtonText}>Buscar Foto en Galería</Text>
           </TouchableOpacity>
 
@@ -137,7 +194,7 @@ const DocumentationScreen: React.FC<DocumentationScreenProps> = ({ navigation })
           <View style={styles.cardFooter}>
              <TouchableOpacity style={[styles.navigationButton, !isNextEnabled && styles.navigationButtonDisabled]} onPress={handleNext} disabled={!isNextEnabled} >
                 <Text style={[styles.navigationButtonText, !isNextEnabled && styles.navigationButtonTextDisabled]}>Siguiente</Text>
-                <Ionicons name="arrow-forward-outline" size={24} color={isNextEnabled ? "#0033A0" : "#A0A0A0"} />
+                <SiguienteIcon width={50} height={50} />
              </TouchableOpacity>
           </View>
         </View>
@@ -147,24 +204,105 @@ const DocumentationScreen: React.FC<DocumentationScreenProps> = ({ navigation })
 };
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#F0F2F5', },
+    safeArea: { flex: 1, backgroundColor: '#3f4c53', },
     customHeaderContainer: { flexDirection: 'row', backgroundColor: '#FFFFFF', paddingHorizontal: 5, paddingVertical: 8, marginHorizontal: 10, marginTop: Platform.OS === 'android' ? 10 : 0, marginBottom: 5, borderRadius: 25, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, },
+    
+     // --- Header Superior ---
+  topHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around', // Distribuye los 3 botones
+    alignItems: 'center',
+    backgroundColor: '#b1b1ae', // Fondo gris medio
+    // height: height * topHeaderHeightRatio, // Altura basada en ratio
+    borderRadius: 20, // Bordes redondeados
+    marginVertical: 16, // Espacio antes de la cuadrícula (valor fijo)
+    marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+  },
+  topHeaderButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 20, // Padding interno 
+    backgroundColor: '#c1c1c1', // Fondo gris claro para botones
+    borderRadius: 10, // Bordes redondeados
+  },
+  topHeaderText: {
+    color: '#FFFFFF', // Texto blanco
+    fontSize: 16, // Texto pequeño
+    fontWeight: '600',
+    marginTop: -14, // Espacio icono-texto
+  },
+   firstButton: {
+    backgroundColor: '#ffffff',
+    color: '#000000',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+  },
+  middleButton: {
+    backgroundColor: '#b1b1ae',
+
+  },
+  lastButton: {
+    backgroundColor: '#b1b1ae',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+
+    
     customHeaderButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 20, backgroundColor: '#E9ECEF', },
     customHeaderButtonActive: { backgroundColor: '#FFFFFF', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 1.5, },
     customHeaderText: { marginLeft: 8, fontSize: 14, fontWeight: 'bold', color: '#6C757D', },
     customHeaderTextActive: { color: '#0033A0', },
     scrollContainer: { flexGrow: 1, padding: 15, paddingTop: 10, },
     contentCard: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 15, padding: 20, paddingBottom: 10, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, },
-    headerSection: { alignItems: 'center', marginBottom: 25, },
-    illustration: { width: 100, height: 70, marginBottom: 10, },
+    headerSection: { alignItems: 'center', marginBottom: 25, flexDirection: 'row' },
+    illustration: {
+      width: 80,
+      height: 80,
+      marginBottom: 10,
+    },
+    bandera: { width: 30, 
+      height: 20, 
+      resizeMode: 'contain', 
+    },
+    textContent: { flex: 1,paddingHorizontal: 15, paddingRight: 20, },
     illustrationPlaceholder: { width: 100, height: 70, backgroundColor: '#EAEAEA', borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 10, },
-    cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#0033A0', marginBottom: 8, textAlign: 'center' },
-    description: { fontSize: 15, color: '#555', textAlign: 'center', lineHeight: 21, marginBottom: 20, },
+    cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#0033A0', marginBottom: 8 },
+    description: { fontSize: 15, color: '#555', lineHeight: 21, marginBottom: 20, },
     inputGroup: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#B0B0B0', borderRadius: 8, backgroundColor: '#FFFFFF', marginBottom: 20, overflow: 'hidden', },
-    matriculaPrefix: { backgroundColor: '#0033A0', paddingHorizontal: 15, height: 50, justifyContent: 'center', alignItems: 'center', borderTopLeftRadius: 7, borderBottomLeftRadius: 7, },
-    matriculaPrefixText: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold', },
+    matriculaPrefix: { 
+      flexDirection: 'column',
+      backgroundColor: '#0033A0', 
+      paddingHorizontal: 15, 
+      height: 80, 
+      width: 40,
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      borderTopLeftRadius: 7, 
+      borderBottomLeftRadius: 7, 
+    },
+    matriculaPrefixText: { 
+      marginTop: 5,
+      color: '#FFFFFF', 
+      fontSize: 18, 
+      fontWeight: 'bold', 
+    },
     inputMatricula: { flex: 1, height: 50, paddingHorizontal: 15, fontSize: 18, fontWeight: 'bold', color: '#333', textTransform: 'uppercase', backgroundColor: '#FFFFFF', },
-    actionButton: { flexDirection: 'row', backgroundColor: '#0033A0', paddingVertical: 14, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginBottom: 12, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, },
+    actionButton: { 
+      flexDirection: 'row', 
+      backgroundColor: '#0033A0', 
+      paddingVertical: 14, 
+      borderTopLeftRadius: 20,
+      borderBottomLeftRadius: 20,
+      marginRight: -20,
+      alignItems: 'center', 
+      paddingLeft: 20,
+      marginBottom: 12, 
+      elevation: 2, 
+      shadowColor: '#000', 
+      shadowOffset: { width: 0, height: 1 }, 
+      shadowOpacity: 0.2, 
+      shadowRadius: 2,
+    },
     actionButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold', marginLeft: 10, },
     buttonIcon: {},
     actionButtonDisabled: { backgroundColor: '#A0B5D3', opacity: 0.7, },
@@ -177,7 +315,11 @@ const styles = StyleSheet.create({
     cardFooter: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginTop: 20, paddingTop: 10, },
     navigationButton: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 15, borderRadius: 20, },
     navigationButtonDisabled: { opacity: 0.4, },
-    navigationButtonText: { fontSize: 17, fontWeight: '600', color: '#0033A0', marginRight: 5, },
-    navigationButtonTextDisabled: { color: '#A0A0A0', },
+    navigationButtonText: { 
+      fontSize: 17, 
+      fontWeight: '800', 
+      marginRight: 5, 
+    },
+    navigationButtonTextDisabled: {color: '#A0A0A0', },
 });
 export default DocumentationScreen;

@@ -321,6 +321,8 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
   },
 
+  // -- TABS --
+
     tabBar: {
       fontSize: 16,
       backgroundColor: '#FFFFFF',

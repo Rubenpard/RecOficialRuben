@@ -110,7 +110,6 @@ const AudioScreen: React.FC<AudioScreenProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#F0F2F5"/>
-      {renderCustomHeader()}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Tarjeta Blanca de Contenido */}
         <View style={styles.contentCard}>
