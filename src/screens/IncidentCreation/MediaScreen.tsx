@@ -14,13 +14,38 @@ import uuid from 'react-native-uuid';
 import RNFS from 'react-native-fs';
 import { createIncidentExpressApi } from '../../api/incidenciasService';
 import MobileIcon from '../../assets/icons/mobile.svg';
-import SiguienteIcon from '../../assets/icons/siguiente.svg';
+import CheckIcon from '../../assets/icons/check.svg';
 import VolverIcon from '../../assets/icons/volver.svg';
+import CameraIcon from '../../assets/icons/camera.svg';
+import PicturesIcon from '../../assets/icons/pictures.svg';
+import MPerfilIcon from '../../assets/icons/usuarioSvg.svg';
+
 
 // --- Importa Iconos SVG para el Header ---
 import ExpresIcon from '../../assets/icons/expres.svg'; // Ajusta ruta
 import HomeIcon from '../../assets/icons/home.svg';     // Ajusta ruta
+
+const gridPaddingVertical = 15;
+const gridPaddingHorizontal = 15;
 // --- ---
+
+    // --- Renderizado ---
+  const headerIconSize = 60; // Tamaño iconos header superior
+  const gridIconSize = 90;  // Tamaño iconos cuadrícula
+
+
+interface TopHeaderButtonData {
+    id: keyof MainStackParamList;
+    title: string;
+    iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+}
+
+// --- Datos ---
+const topHeaderButtons: TopHeaderButtonData[] = [
+    { id: 'Profile', title: 'Mi Perfil',  iconComponent: MPerfilIcon },
+    { id: 'Calendar', title: 'Inicio',  iconComponent: HomeIcon },
+
+];
 
 type MediaScreenProps = NativeStackScreenProps<IncidentCreationStackParamList, 'IncidentMedia'>;
 
@@ -94,6 +119,41 @@ const MediaScreen: React.FC<MediaScreenProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#F0F2F5"/>
+          {/* Header Superior (3 Botones) */}
+               <View style={styles.topHeaderContainer}>
+                 {topHeaderButtons.map((button, index) => {
+                   const Icon = button.iconComponent;
+            
+                   // Determinar estilos por posición
+                   const isFirst = index === 0;
+                   const isLast = index === topHeaderButtons.length - 1;
+            
+                   return (
+                     <TouchableOpacity
+                       key={button.id}
+                       style={[
+                         styles.topHeaderButton,
+                         isFirst && styles.firstButton,
+                         isLast && styles.lastButton,
+                         !isFirst && !isLast && styles.middleButton
+                       ]}
+                       onPress={() => navigateTo(button.id)}
+                       activeOpacity={0.7}
+                     >
+                          <Icon
+                           width={headerIconSize}
+                           height={headerIconSize}
+                           fill={isFirst ? '#2c4391' : '#ffffff'}
+                          />
+                         <Text style={[
+                           styles.topHeaderText,
+                           isFirst && { color: '#000000' },
+                           !isFirst && { color: '#ffffff' }
+                          ]}>{button.title}</Text>
+                     </TouchableOpacity>
+                   );
+                 })}
+               </View>
       <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
         <View style={styles.contentCard}>
           <View style={styles.headerSection}>
@@ -105,19 +165,25 @@ const MediaScreen: React.FC<MediaScreenProps> = ({ navigation }) => {
               <Text style={styles.description}> Adjunta una foto o vídeo adicional si es necesario. </Text>
            </View>
           </View>
-          <TouchableOpacity style={styles.actionButton} onPress={handleTakeMedia} activeOpacity={0.7}> <Ionicons name="camera-outline" size={24} color="#FFFFFF" style={styles.buttonIcon}/> <Text style={styles.actionButtonText}>Hacer Foto / Vídeo</Text> </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton} onPress={handleBrowseMedia} activeOpacity={0.7}> <Ionicons name="folder-open-outline" size={24} color="#FFFFFF" style={styles.buttonIcon}/> <Text style={styles.actionButtonText}>Buscar en Galería</Text> </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton} onPress={handleTakeMedia} activeOpacity={0.7}> 
+            <CameraIcon width={50} height={50} color="#FFFFFF" style={styles.buttonIcon}/> 
+          <Text style={styles.actionButtonText}>Hacer Foto / Vídeo</Text> 
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton} onPress={handleBrowseMedia} activeOpacity={0.7}> 
+            <PicturesIcon height={50} width={50} color="#FFFFFF" style={styles.buttonIcon}/> 
+            <Text style={styles.actionButtonText}>Buscar en Galería</Text> 
+            </TouchableOpacity>
 
           {mediaAsset && ( <View style={styles.previewArea}> <Text style={styles.previewText}>Adjunto:</Text> <View style={styles.previewItem}> {mediaAsset.type?.startsWith('video/') ? ( <Ionicons name="film-outline" size={30} color="#555" style={styles.previewImage} /> ) : ( <Image source={{ uri: mediaAsset.uri }} style={styles.previewImage} resizeMode="cover" /> )} <View style={styles.previewDetails}><Text style={styles.previewFileName} numberOfLines={1}> {mediaAsset.fileName || (mediaAsset.type?.startsWith('video/') ? 'Vídeo' : 'Archivo')} </Text>{mediaAsset.type && <Text style={styles.previewFileType}>{mediaAsset.type}</Text>}</View> <TouchableOpacity onPress={removeMediaFile} style={styles.removeButton}> <Ionicons name="close-circle" size={28} color="#DC3545" /> </TouchableOpacity> </View> </View> )}
 
           <View style={styles.cardFooter}>
              <TouchableOpacity style={styles.navigationButton} onPress={handlePrevious}>
               <VolverIcon width={50} height={50}/>
-             <Text style={styles.navigationButtonText}>Anterior</Text> 
+             <Text style={styles.navigationButtonText}>Anterior</Text>
              </TouchableOpacity>
-             <TouchableOpacity onPress={handleFinish} disabled={isSubmitting} >
-                {isSubmitting ? ( <SiguienteIcon width={50} height={50} style={{marginRight: 5}}/> ) : ( <SiguienteIcon width={50} height={50} style={{marginRight: 5}}/> )}
-                <Text style={[styles.navigationButtonText, styles.finishButtonText]}> {isSubmitting ? 'Enviando...' : 'Finalizar'} </Text>
+               <TouchableOpacity style={[styles.navigationButton, isSubmitting && styles.actionButtonDisabled]} onPress={handleFinish} disabled={isSubmitting} >
+                {isSubmitting ? ( <CheckIcon width={60} height={60} style={{marginRight: 5}}/> ) : ( <CheckIcon width={60} height={60} color="#FFFFFF" style={{marginRight: 5}}/> )}
+                <Text style={[styles.navigationButtonText]}> {isSubmitting ? 'Enviando...' : 'Finalizar'} </Text>
              </TouchableOpacity>
           </View>
         </View>
@@ -132,6 +198,46 @@ const styles = StyleSheet.create({
       flex: 1, 
       backgroundColor: '#3f4c53',
     },
+       // --- Header Superior ---
+  topHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around', // Distribuye los 3 botones
+    alignItems: 'center',
+    backgroundColor: '#b1b1ae', // Fondo gris medio
+    // height: height * topHeaderHeightRatio, // Altura basada en ratio
+    borderRadius: 20, // Bordes redondeados
+    marginVertical: 16, // Espacio antes de la cuadrícula (valor fijo)
+    marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+  },
+  topHeaderButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 20, // Padding interno 
+    backgroundColor: '#c1c1c1', // Fondo gris claro para botones
+    borderRadius: 10, // Bordes redondeados
+  },
+  topHeaderText: {
+    color: '#FFFFFF', // Texto blanco
+    fontSize: 16, // Texto pequeño
+    fontWeight: '600',
+    marginTop: -14, // Espacio icono-texto
+  },
+   firstButton: {
+    backgroundColor: '#ffffff',
+    color: '#000000',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+  },
+  middleButton: {
+    backgroundColor: '#b1b1ae',
+
+  },
+  lastButton: {
+    backgroundColor: '#b1b1ae',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+
     customHeaderContainer: { flexDirection: 'row', backgroundColor: '#FFFFFF', paddingHorizontal: 5, paddingVertical: 8, marginHorizontal: 10, marginTop: Platform.OS === 'android' ? 10 : 0, marginBottom: 5, borderRadius: 25, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, },
     customHeaderButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 20, backgroundColor: '#E9ECEF', },
     customHeaderButtonActive: { backgroundColor: '#FFFFFF', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 1.5, },
@@ -174,7 +280,5 @@ const styles = StyleSheet.create({
     cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 20, borderTopWidth: 1, borderTopColor: '#EEE', },
     navigationButton: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 15, borderRadius: 20, },
     navigationButtonText: { fontSize: 17, fontWeight: '600', color: '#0033A0', marginHorizontal: 5, },
-    finishButton: { backgroundColor: '#28a745', },
-    finishButtonText: {  },
 });
 export default MediaScreen;
