@@ -22,8 +22,8 @@ import MPerfilIcon from '../../assets/icons/usuarioSvg.svg';
 
 
 // --- Importa Iconos SVG para el Header ---
-import ExpresIcon from '../../assets/icons/expres.svg'; // Ajusta ruta
-import HomeIcon from '../../assets/icons/home.svg';     // Ajusta ruta
+import ExpresIcon from '../../assets/icons/expres.svg';
+import HomeIcon from '../../assets/icons/home.svg';
 
 const gridPaddingVertical = 15;
 const gridPaddingHorizontal = 15;

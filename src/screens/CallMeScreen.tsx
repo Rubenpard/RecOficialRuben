@@ -9,14 +9,17 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 // Asegúrate que MainStackParamList sea el correcto donde CallMe está definido
 import type { MainStackParamList } from '../navigation/MainStackNavigator';
 import { useAuth } from '../context/AuthContext';
-import { createCallRequestApi  } from '../api/callService'; // Ajusta la ruta si es necesario
+import { createCallRequestApi  } from '../api/callService';
+import CarReportIcon from '../assets/icons/carRepair.svg'
 // import type { RequestCallApiResponse } from '../api/callService'; // Ya no es estrictamente necesario si solo verificamos success
 
 // --- Importa Iconos SVG para el Header ---
-import LlamameHeaderIcon from '../assets/icons/llamameheader.svg'; // Ajusta la ruta si es necesario
-import HomeIcon from '../assets/icons/home.svg';                     // Ajusta la ruta si es necesario
+import LlamameHeaderIcon from '../assets/icons/llamameheader.svg';
+import HomeIcon from '../assets/icons/home.svg';
 import { HttpStatusCode } from 'axios';
+import ExpresIcon from '../assets/icons/expres.svg';
 // --- ---
+
 
 // Placeholder para la ilustración del coche (si la tienes)
 // const callIllustration = require('../../assets/images/call_illustration.png');
@@ -31,6 +34,28 @@ const CallMeScreen: React.FC<CallMeScreenProps> = ({ navigation }) => {
   const [callRequested, setCallRequested] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+
+
+// --- ---
+
+    // --- Renderizado ---
+  const headerIconSize = 60; // Tamaño iconos header superior
+  const gridIconSize = 90;  // Tamaño iconos cuadrícula
+
+
+interface TopHeaderButtonData {
+    id: keyof MainStackParamList;
+    title: string;
+    iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+}
+
+// --- Datos ---
+const topHeaderButtons: TopHeaderButtonData[] = [
+    { id: 'Profile', title: 'Llamame',  iconComponent: LlamameHeaderIcon },
+    { id: 'Calendar', title: 'Inicio',  iconComponent: HomeIcon },
+
+];
 
   // Intenta obtener un nombre para mostrar (ej. de la parte local del email)
   const displayName = userEmail?.split('@')[0] || "Usuario";
@@ -73,7 +98,6 @@ const CallMeScreen: React.FC<CallMeScreenProps> = ({ navigation }) => {
   const renderCustomHeader = () => (
     <View style={styles.customHeaderContainer}>
          <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}>
-             <LlamameHeaderIcon width={28} height={28} fill="#0033A0" />
              <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>Llámame</Text>
          </View>
          <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.navigate('Home')}>
@@ -85,43 +109,85 @@ const CallMeScreen: React.FC<CallMeScreenProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+         {/* Header Superior (3 Botones) */}
+                     <View style={styles.topHeaderContainer}>
+                       {topHeaderButtons.map((button, index) => {
+                         const Icon = button.iconComponent;
+                  
+                         // Determinar estilos por posición
+                         const isFirst = index === 0;
+                         const isLast = index === topHeaderButtons.length - 1;
+                  
+                         return (
+                           <TouchableOpacity
+                             key={button.id}
+                             style={[
+                               styles.topHeaderButton,
+                               isFirst && styles.firstButton,
+                               isLast && styles.lastButton,
+                               !isFirst && !isLast && styles.middleButton
+                             ]}
+                             onPress={() => navigateTo(button.id)}
+                             activeOpacity={0.7}
+                           >
+                            <View style={styles.headerContent}>
+                                <Icon
+                                 width={headerIconSize}
+                                 height={headerIconSize}
+                                 fill={isFirst ? '#2c4391' : '#ffffff'}
+                                />
+                                <View>
+                                  <Text style={[
+                                    styles.topHeaderText,
+                                    isFirst && { color: '#000000' },
+                                    !isFirst && { color: '#ffffff' }
+                                    ]}>{button.title}
+                                  </Text>
+                                </View>
+                                </View>
+                           </TouchableOpacity>
+                         );
+                       })}
+                     </View>
       <StatusBar barStyle="light-content" backgroundColor="#F0F2F5"/>
-      {renderCustomHeader()}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Tarjeta Blanca de Contenido */}
         <View style={styles.contentCard}>
           {/* Caja Pulsable */}
-          <TouchableOpacity
-            style={[styles.callBox, callRequested && styles.callBoxRequested, isLoading && styles.callBoxDisabled]}
-            onPress={handleRequestCall}
-            disabled={callRequested || isLoading}
-            activeOpacity={0.7}
-          >
             {isLoading ? (
-                <ActivityIndicator size="large" color={callRequested ? "#155724" : "#0033A0"} />
+              <ActivityIndicator size="large" color={callRequested ? "#155724" : "#0033A0"} />
             ) : callRequested ? (
               <>
+              <TouchableOpacity
+                style={[styles.callBox, callRequested && styles.callBoxRequested, isLoading && styles.callBoxDisabled]}
+                onPress={handleRequestCall}
+                disabled={callRequested || isLoading}
+                activeOpacity={0.7}
+              >
                 <Text style={styles.callBoxTitle}>Recibido</Text>
                 <Text style={styles.callBoxSubtitle}>{displayName}</Text>
+          </TouchableOpacity>
+                        <View style={styles.illustrationContainer}>
+            <CarReportIcon width={150} height={150} />
+          </View>
               </>
             ) : (
               <>
+                    <TouchableOpacity
+                style={[styles.callBox, callRequested && styles.callBoxRequested, isLoading && styles.callBoxDisabled]}
+                onPress={handleRequestCall}
+                disabled={callRequested || isLoading}
+                activeOpacity={0.7}
+              >
                 <Text style={styles.callBoxTitle}>¿Te llamamos?</Text>
                 <Text style={styles.callBoxSubtitle}>Pulsa aquí</Text>
+                <Text>Esta opción no permite crear consultas o resolver incidencias</Text>
+                </TouchableOpacity>
+                <View style={styles.illustrationContainer}>
+                  <LlamameHeaderIcon width={150} height={150} />
+              </View>
               </>
             )}
-          </TouchableOpacity>
-
-          {/* Ilustración */}
-          <View style={styles.illustrationContainer}>
-            {callIllustration ? (
-              <Image source={callIllustration} style={styles.illustration} resizeMode="contain" />
-            ) : (
-              <View style={styles.illustrationPlaceholder}>
-                <Ionicons name="car-sport-outline" size={100} color="#A0B5D3" />
-              </View>
-            )}
-          </View>
 
           {/* Mensaje de Error o Confirmación */}
           {error && !isLoading && (
@@ -138,12 +204,61 @@ const CallMeScreen: React.FC<CallMeScreenProps> = ({ navigation }) => {
   );
 };
 
+const gridPaddingVertical = 15;
+const gridPaddingHorizontal = 15;
+
 /* ==========================================================================
    Estilos (Igual que en la versión anterior, pero revisados)
    ========================================================================== */
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F0F2F5', },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#3f4c53',
+   },
   customHeaderContainer: { flexDirection: 'row', backgroundColor: '#FFFFFF', paddingHorizontal: 5, paddingVertical: 8, marginHorizontal: 10, marginTop: Platform.OS === 'android' ? 10 : 0, marginBottom: 5, borderRadius: 25, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, },
+  
+  // --- Header Superior ---
+  topHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around', // Distribuye los 3 botones
+    alignItems: 'center',
+    experimental_backgroundImage: 'linear-gradient(to right, #b1b1ae, #9c9c9c)',
+    // height: height * topHeaderHeightRatio, // Altura basada en ratio
+    borderRadius: 20, // Bordes redondeados
+    marginVertical: gridPaddingVertical, // Espacio antes de la cuadrícula
+    marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+  },
+  topHeaderButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 20, // Padding interno 
+    backgroundColor: '#c1c1c1', // Fondo gris claro para botones
+    borderRadius: 10, // Bordes redondeados
+  },
+  topHeaderText: {
+    color: '#FFFFFF', // Texto blanco
+    fontSize: 16, // Texto pequeño
+    fontWeight: '600',
+    marginTop: -14, // Espacio icono-texto
+  },
+   firstButton: {
+    backgroundColor: '#c1c1c1',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+  },
+  middleButton: {
+    backgroundColor: '#b1b1ae',
+  },
+  lastButton: {
+    backgroundColor: '#9c9c9c',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerContent:{
+    flexDirection: 'column',
+    gap: 20,
+  },
+
   customHeaderButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 20, backgroundColor: '#E9ECEF', },
   customHeaderButtonActive: { backgroundColor: '#FFFFFF', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 1.5, },
   customHeaderText: { marginLeft: 8, fontSize: 14, fontWeight: 'bold', color: '#6C757D', },
@@ -174,9 +289,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 30,
     padding: 20,
+    flexDirection: 'column',
+    gap: 10,
+    textAlign: 'center',
   },
   callBoxRequested: {
-    backgroundColor: '#D4EDDA', // Verde éxito
+    backgroundColor: '#E0E8F5',
     borderColor: '#C3E6CB',
   },
   callBoxDisabled: { // Para cuando isLoading es true

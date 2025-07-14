@@ -15,6 +15,10 @@ import LlamameIcon from '../assets/icons/llamame.svg';
 import MPerfilIcon from '../assets/icons/usuarioSvg.svg';
 import CalendarioIcon from '../assets/icons/calendario.svg';
 import PromoIcon from '../assets/icons/promoHome.svg';
+import HeaderRoutes from '../navigation/headers/HeaderRoutes';
+import MasIcon from '../assets/icons/mas.svg';
+import homeIcon from '../assets/icons/home.svg';
+import LogOutIcon from '../assets/icons/logout.svg'; 
 // --- ---
 
 // --- Tipos ---
@@ -181,6 +185,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: -14, // Espacio icono-texto
   },
+   firstButton: {
+    backgroundColor: '#c1c1c1',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+  },
+  middleButton: {
+    backgroundColor: '#b1b1ae',
+  },
+  lastButton: {
+    backgroundColor: '#9c9c9c',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+  },
   // --- Cuadrícula Inferior ---
     gridContainer: {
       flex: 1, // Ocupa el espacio restante
@@ -222,20 +239,6 @@ textContainer: {
     fontWeight: 'bold',
     color: '#333333',
     textAlign: 'center',
-  },
-
-  firstButton: {
-    backgroundColor: '#c1c1c1',
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
-  },
-  middleButton: {
-    backgroundColor: '#b1b1ae',
-  },
-  lastButton: {
-    backgroundColor: '#9c9c9c',
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
   },
 
 });
