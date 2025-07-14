@@ -17,7 +17,28 @@ import AbiertasIcon from '../assets/icons/abiertas.svg';
 import CerradasIcon from '../assets/icons/cerradas.svg';
 import GlobalesIcon from '../assets/icons/globales.svg';
 import HomeIcon from '../assets/icons/home.svg';
+import MPerfilIcon from '../assets/icons/usuarioSvg.svg';
 // --- ---
+const gridPaddingVertical = 15;
+const gridPaddingHorizontal = 15;
+    // --- Renderizado ---
+  const headerIconSize = 60; // Tamaño iconos header superior
+  const gridIconSize = 90;  // Tamaño iconos cuadrícula
+
+
+interface TopHeaderButtonData {
+    id: keyof MainStackParamList;
+    title: string;
+    iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+}
+
+// --- Datos ---
+const topHeaderButtons: TopHeaderButtonData[] = [
+    { id: 'Profile', title: 'Abiertas',  iconComponent: AbiertasIcon },
+    { id: 'Calendar', title: 'Inicio',  iconComponent: HomeIcon },
+
+];
+
 
 type IncidentListScreenProps = NativeStackScreenProps<HomeStackParamList, 'IncidentList'>;
 const PAGE_LIMIT = 10;
@@ -100,7 +121,29 @@ const IncidentListScreen: React.FC<IncidentListScreenProps> = ({ route, navigati
   // --- Renderizado de Componentes Internos ---
   const renderCustomHeader = () => ( <View style={styles.customHeaderContainer}> <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}> <HeaderIcon width={28} height={28} fill="#0033A0" /> <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>{headerTitle}</Text> </View> <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.navigate('Home')}> <HomeIcon width={28} height={28} fill="#6C757D" /> <Text style={styles.customHeaderText}>Inicio</Text> </TouchableOpacity> </View> );
   const renderFilterBar = () => { if (!showFilters) return null; const renderFilterButton = (fType: IncidentFilterField, lbl: string) => ( <TouchableOpacity key={fType} style={styles.filterButton} onPress={() => showFilterModal(fType)} disabled={fType === 'titulo'}> <Text style={styles.filterButtonText}>{filters[fType] || lbl}</Text> </TouchableOpacity> ); return ( <View style={styles.filterBarContainer}> <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterBar}> {renderFilterButton('marca', 'Marca')} {renderFilterButton('modelo', 'Modelo')} {renderFilterButton('periodo', 'Periodo')} {renderFilterButton('sistema', 'Sistema')} </ScrollView> {Object.values(filters).some(v => v) && ( <TouchableOpacity onPress={resetFilters} style={styles.resetButton}><Text style={styles.resetButtonText}>Restablecer</Text></TouchableOpacity> )} </View> ); };
-  const renderIncidentItem = ({ item }: { item: AsistenciaListItem }) => { const displayTitle = item.marca && item.modelo ? `${item.marca} ${item.modelo}` : item.vehiculo?.trim() || item.titulo || 'Incidencia'; const displaySubtitle = item.titulo === displayTitle ? (item.sintomas || '') : (item.titulo || ''); return ( <TouchableOpacity style={styles.card} onPress={() => handleIncidentPress(item)} activeOpacity={0.7}> <View style={styles.cardContent}> <Text style={styles.cardTitle} numberOfLines={1}>{displayTitle}</Text> <Text style={styles.cardSubtitle} numberOfLines={1}>{displaySubtitle}</Text> </View> <TouchableOpacity style={styles.cardIconTouchable} onPress={() => handleIncidentPress(item)}> <Ionicons name="add-circle-outline" size={28} color="#0056b3" /> </TouchableOpacity> </TouchableOpacity> ); };
+  const renderIncidentItem = ({ item }: { item: AsistenciaListItem }) => { const displayTitle = item.marca && item.modelo ? `${item.marca} ${item.modelo}` : item.vehiculo?.trim() || item.titulo || 'Incidencia'; const displaySubtitle = item.titulo === displayTitle ? (item.sintomas || '') : (item.titulo || ''); 
+  return ( 
+  <>  
+  <TouchableOpacity 
+  style={styles.card} 
+  onPress={() => handleIncidentPress(item)} 
+  activeOpacity={0.7}> 
+  <View style={styles.cardContent}> 
+  <Text style={styles.cardTitle} 
+  numberOfLines={1}>{displayTitle}
+  </Text> 
+  <Text style={styles.cardSubtitle} numberOfLines={1}>
+    {displaySubtitle}</Text> 
+    </View> 
+    <TouchableOpacity style={styles.cardIconTouchable} 
+    onPress={() => handleIncidentPress(item)}> 
+    <Text style={styles.cardIconText}>+</Text> 
+    </TouchableOpacity> 
+    </TouchableOpacity>
+    <View style={styles.cardBottom}></View>
+    </>
+     );
+    };
   const renderFilterModalContent = () => { if (!currentFilterEditing) return null; let options: string[] = []; if (currentFilterEditing === 'modelo') { options = getModelosForMarca(filters.marca ?? null); } else { options = filterOptionsData[currentFilterEditing] || []; } const optionsWithClear = ["(Limpiar Filtro)", ...options]; return ( <TouchableOpacity activeOpacity={1} style={styles.modalContainer}> <Text style={styles.modalTitle}>Seleccionar {currentFilterEditing}</Text> <FlatList data={optionsWithClear} keyExtractor={(item) => item} renderItem={({ item }) => ( <TouchableOpacity style={styles.modalOption} onPress={() => handleFilterSelect(item === "(Limpiar Filtro)" ? null : item)} disabled={item.startsWith('(') && item !== "(Limpiar Filtro)"}> <Text style={[styles.modalOptionText, (item.startsWith('(') && item !== "(Limpiar Filtro)") && styles.modalOptionDisabled]}>{item}</Text> </TouchableOpacity> )} ItemSeparatorComponent={() => <View style={styles.separator} />} /> <TouchableOpacity style={styles.modalCloseButton} onPress={() => setIsFilterModalVisible(false)}><Text style={styles.modalCloseButtonText}>Cancelar</Text></TouchableOpacity> </TouchableOpacity> ); };
   const renderFilterModal = () => { if (!showFilters) return null; return ( <Modal transparent={true} visible={isFilterModalVisible} animationType="fade" onRequestClose={() => setIsFilterModalVisible(false)}> <Pressable style={styles.modalOverlay} onPress={() => setIsFilterModalVisible(false)}> {renderFilterModalContent()} </Pressable> </Modal> ); };
   const renderFooter = () => { if (!isLoadingMore || !canLoadMore) return null; return ( <View style={styles.footerLoader}><ActivityIndicator size="small" color="#0033A0" /></View> ); };
@@ -109,12 +152,57 @@ const IncidentListScreen: React.FC<IncidentListScreenProps> = ({ route, navigati
   return (
     <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF"/>
-        {renderCustomHeader()}
+          {/* Header Superior (3 Botones) */}
+                 <View style={styles.topHeaderContainer}>
+                   {topHeaderButtons.map((button, index) => {
+                     const Icon = button.iconComponent;
+              
+                     // Determinar estilos por posición
+                     const isFirst = index === 0;
+                     const isLast = index === topHeaderButtons.length - 1;
+              
+                     return (
+                       <TouchableOpacity
+                         key={button.id}
+                         style={[
+                           styles.topHeaderButton,
+                           isFirst && styles.firstButton,
+                           isLast && styles.lastButton,
+                           !isFirst && !isLast && styles.middleButton
+                         ]}
+                         onPress={() => navigateTo(button.id)}
+                         activeOpacity={0.7}
+                       >
+                            <Icon
+                             width={headerIconSize}
+                             height={headerIconSize}
+                             fill={isFirst ? '#2c4391' : '#ffffff'}
+                            />
+                           <Text style={[
+                             styles.topHeaderText,
+                             isFirst && { color: '#000000' },
+                             !isFirst && { color: '#ffffff' }
+                            ]}>{button.title}</Text>
+                       </TouchableOpacity>
+                     );
+                   })}
+                 </View>
         {renderFilterBar()}
         {isLoading && !isRefreshing && incidents.length === 0 && !error && ( <View style={styles.centered}><ActivityIndicator size="large" color="#0033A0" /><Text style={styles.loadingText}>Cargando...</Text></View> )}
         {error && incidents.length === 0 && ( <View style={styles.centered}><Text style={styles.errorText}>{error}</Text><TouchableOpacity onPress={() => loadIncidents(false, false)} style={styles.retryButton}><Text style={styles.retryButtonText}>Reintentar</Text></TouchableOpacity></View> )}
         {(!error || incidents.length > 0) && (
-            <FlatList data={incidents} renderItem={renderIncidentItem} keyExtractor={(item) => item.id.toString()} contentContainerStyle={styles.listContentContainer} ListEmptyComponent={ (!isLoading && !isRefreshing && hasLoadedOnce && !error) ? <View style={styles.centered}><Text style={styles.emptyText}>No se encontraron incidencias</Text></View> : null } refreshControl={ <RefreshControl refreshing={isRefreshing} onRefresh={() => { setOffset(0); loadIncidents(true, false); }} colors={["#0033A0"]} /> } onEndReached={showFilters ? handleLoadMore : undefined} onEndReachedThreshold={0.5} ListFooterComponent={showFilters ? renderFooter : undefined} onMomentumScrollBegin={() => { onEndReachedCalledDuringMomentum.current = false; }} /> )}
+            <FlatList data={incidents} 
+            renderItem={renderIncidentItem} 
+            keyExtractor={(item) => item.id.toString()} 
+            contentContainerStyle={styles.listContentContainer} 
+            ListEmptyComponent={ (!isLoading && !isRefreshing && hasLoadedOnce && !error) ? 
+            <View style={styles.centered}>
+              <Text style={styles.emptyText}>No se encontraron incidencias</Text>
+              </View> : null } refreshControl={ <RefreshControl refreshing={isRefreshing} 
+              onRefresh={() => { setOffset(0); loadIncidents(true, false); }} colors={["#0033A0"]} /> } 
+              onEndReached={showFilters ? handleLoadMore : undefined} 
+              onEndReachedThreshold={0.5} ListFooterComponent={showFilters ? renderFooter : undefined} 
+              onMomentumScrollBegin={() => { onEndReachedCalledDuringMomentum.current = false; }} /> )}
         {renderFilterModal()}
     </SafeAreaView>
   );
@@ -124,8 +212,63 @@ const IncidentListScreen: React.FC<IncidentListScreenProps> = ({ route, navigati
 
 // --- Estilos (Igual que la versión completa anterior, incluyendo .footerLoader) ---
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#DDE2E7' },
-    customHeaderContainer: { flexDirection: 'row', backgroundColor: '#FFFFFF', paddingHorizontal: 5, paddingVertical: 8, margin: 10, borderRadius: 25, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, },
+    safeArea: {
+      flex: 1,
+      backgroundColor: '#3f4c53',
+    },
+    customHeaderContainer: { 
+      flexDirection: 'row', 
+      backgroundColor: '#FFFFFF', 
+      paddingHorizontal: 5, 
+      paddingVertical: 8, 
+      margin: 10, 
+      borderRadius: 25, 
+      elevation: 3, 
+      shadowColor: '#000', 
+      shadowOffset: { width: 0, height: 1 }, 
+      shadowOpacity: 0.2, 
+      shadowRadius: 2, },
+    
+     // --- Header Superior ---
+  topHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around', // Distribuye los 3 botones
+    alignItems: 'center',
+    backgroundColor: '#b1b1ae', // Fondo gris medio
+    // height: height * topHeaderHeightRatio, // Altura basada en ratio
+    borderRadius: 20, // Bordes redondeados
+    marginVertical: 16, // Espacio antes de la cuadrícula (valor fijo)
+    marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+  },
+  topHeaderButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 20, // Padding interno 
+    backgroundColor: '#c1c1c1', // Fondo gris claro para botones
+    borderRadius: 10, // Bordes redondeados
+  },
+  topHeaderText: {
+    color: '#FFFFFF', // Texto blanco
+    fontSize: 16, // Texto pequeño
+    fontWeight: '600',
+    marginTop: -14, // Espacio icono-texto
+  },
+   firstButton: {
+    backgroundColor: '#ffffff',
+    color: '#000000',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+  },
+  middleButton: {
+    backgroundColor: '#b1b1ae',
+
+  },
+  lastButton: {
+    backgroundColor: '#b1b1ae',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+
     customHeaderButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 20, backgroundColor: '#E9ECEF', },
     customHeaderButtonActive: { backgroundColor: '#FFFFFF', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 1.5, },
     customHeaderText: { marginLeft: 8, fontSize: 14, fontWeight: 'bold', color: '#6C757D', },
@@ -142,12 +285,61 @@ const styles = StyleSheet.create({
     filterButtonText: { color: '#444', fontSize: 13, fontWeight: '500', },
     resetButton: { alignSelf: 'flex-start', marginLeft: 15, marginTop: 5, },
     resetButtonText: { color: '#0056b3', fontSize: 13, textDecorationLine: 'underline', },
-    listContentContainer: { padding: 15, flexGrow: 1, },
-    card: { backgroundColor: '#F8F9FA', borderRadius: 15, padding: 15, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: '#E9ECEF', },
-    cardContent: { flex: 1, marginRight: 10, },
+    listContentContainer: { 
+      padding: 15, 
+      flexGrow: 1, 
+      backgroundColor: '#ffffff', 
+      margin: 20,
+      borderRadius: 20, 
+    },
+    card: { 
+      backgroundColor: '#ededed', 
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      justifyContent: 'space-between',
+      height: 90,
+      marginBottom: 20,
+      marginTop: -15,
+
+      borderTopLeftRadius: 0,
+      borderTopEndRadius: 0,
+      borderWidth: 5,
+      borderTopWidth: 0,
+      borderColor: '#ffffff',
+      // borderWidth: 10,
+      // borderTopWidth: 0,
+      // borderColor: '#ffffff',
+    },
+
+    cardBottom: {
+       backgroundColor: '#ededed', 
+       marginTop: -25,
+      borderRadius: 20,
+      borderTopLeftRadius: 0,
+      borderTopEndRadius: 0,
+      borderWidth: 7,
+      borderTopWidth: 0,
+      borderColor: '#ffffff',
+      zIndex:999,
+      height: 20,
+    },
+    cardContent: { 
+      flex: 1, 
+      marginRight: 10,
+      marginTop: 20,
+      paddingHorizontal: 20,
+    },
     cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#212529', marginBottom: 3, },
     cardSubtitle: { fontSize: 14, color: '#495057', },
-    cardIconTouchable:{ padding: 5, },
+    cardIconTouchable:{
+      padding: 5,
+    },
+        cardIconText:{
+      padding: 20,
+       fontSize: 30,
+       fontWeight: 800,
+       color: '#0132ab',
+    },
     footerLoader: { paddingVertical: 20, alignItems: 'center' },
     // --- Estilos Modal (copia de versión anterior) ---
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', alignItems: 'center', },
