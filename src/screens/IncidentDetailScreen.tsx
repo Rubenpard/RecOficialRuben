@@ -3,189 +3,216 @@ import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, Linking, Alert, SafeAreaView, LayoutAnimation,
-  Platform, UIManager, StatusBar
+  Platform, UIManager, StatusBar, Modal, TextInput
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '../navigation/MainStackNavigator';
 import type { AsistenciaListItem, AsistenciaSeguimiento } from '../types/asistencia';
 import VolverIcon from '../assets/icons/volver.svg';
-import SiguienteIcon from '../assets/icons/siguiente.svg';
 import RefreshIcon from '../assets/icons/refresh.svg';
 import CerrarIcon from '../assets/icons/cerrar.svg';
 
-
-// --- Importa Iconos SVG para el Header ---
 import AbiertasIcon from '../assets/icons/abiertas.svg';
 import CerradasIcon from '../assets/icons/cerradas.svg';
-import GlobalesIcon from '../assets/icons/globales.svg';
 import HomeIcon from '../assets/icons/home.svg';
-import MPerfilIcon from '../assets/icons/usuarioSvg.svg';
-// --- ---
+import CheckIcon from '../assets/icons/check.svg'
 
 const gridPaddingVertical = 15;
 const gridPaddingHorizontal = 15;
-
-    // --- Renderizado ---
-  const headerIconSize = 60; // Tamaño iconos header superior
-  const gridIconSize = 90;  // Tamaño iconos cuadrícula
-
+const headerIconSize = 60;
+const gridIconSize = 90;
 
 interface TopHeaderButtonData {
-    id: keyof MainStackParamList;
-    title: string;
-    iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+  id: keyof MainStackParamList;
+  title: string;
+  iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
 }
 
-// --- Datos ---
 const topHeaderButtons: TopHeaderButtonData[] = [
-    { id: 'Profile', title: 'Abiertas',  iconComponent: AbiertasIcon },
-    { id: 'Calendar', title: 'Inicio',  iconComponent: HomeIcon },
-
+  { id: 'Profile', title: 'Abiertas', iconComponent: AbiertasIcon },
+  { id: 'Calendar', title: 'Inicio', iconComponent: HomeIcon },
 ];
 
-// Habilita LayoutAnimation en Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) { UIManager.setLayoutAnimationEnabledExperimental(true); }
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
-// Tipo Props
 type IncidentDetailScreenProps = NativeStackScreenProps<MainStackParamList, 'IncidentDetail'>;
 
-/* ==========================================================================
-   Componente IncidentDetailScreen (SIN Carga API)
-   ========================================================================== */
 const IncidentDetailScreen: React.FC<IncidentDetailScreenProps> = ({ route, navigation }) => {
-  const { incident } = route.params; // Obtiene el objeto directamente
+  const { incident } = route.params;
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [responseText, setResponseText] = useState('');
 
-  const [isExpanded, setIsExpanded] = useState<boolean>(true); // Estado para desplegar
-
-  // Comprobación inicial
   if (!incident || typeof incident !== 'object') {
-    return ( <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF"/>
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
         <View style={styles.centered}>
-            <Text style={styles.errorText}>Error: Datos inválidos.</Text>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                <VolverIcon width={50} height={50} />
-                <Text style={styles.backButtonText}>Volver</Text>
-                </TouchableOpacity></View>
-                </SafeAreaView> );
+          <Text style={styles.errorText}>Error: Datos inválidos.</Text>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <VolverIcon width={50} height={50} />
+            <Text style={styles.backButtonText}>Volver</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
   }
 
-  // Lógica para Header (simplificada)
   const isClosed = incident.estado !== 0;
-  const parentListName = isClosed ? 'Cerradas' : 'Abiertas'; // Ajusta si viene de Globales
+  const parentListName = isClosed ? 'Cerradas' : 'Abiertas';
   const ParentIcon = isClosed ? CerradasIcon : AbiertasIcon;
 
-  // Manejadores
-  const toggleExpand = () => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setIsExpanded(prev => !prev); };
-  const handleOpenLink = async (url: string | undefined | null) => { if (!url) return; try { const supported = await Linking.canOpenURL(url); if (supported) await Linking.openURL(url); else Alert.alert("Error", `No se puede abrir URL: ${url}`); } catch (e) { Alert.alert("Error", "Error al abrir enlace."); }};
+  const toggleExpand = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsExpanded(prev => !prev);
+  };
 
-  // Renderizado Interno
-  const renderCustomHeader = () => ( <View style={styles.customHeaderContainer}><View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}><ParentIcon width={28} height={28} fill="#0033A0" /><Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>{parentListName}</Text></View><TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.navigate('Home')}><HomeIcon width={28} height={28} fill="#6C757D" /><Text style={styles.customHeaderText}>Inicio</Text></TouchableOpacity></View> );
-  const renderDetailSection = (title: string, content: string | null | undefined, linkUrl?: string | null) => { if (!content && !linkUrl) return null; return ( <View style={styles.detailSection}><Text style={styles.detailTitle}>{title}</Text> {content && <Text style={styles.detailContent}>{content}</Text>} {linkUrl && ( <TouchableOpacity onPress={() => handleOpenLink(linkUrl)} style={styles.linkButton}><Ionicons name={title === 'Archivo Adjunto' ? "attach-outline" : "volume-medium-outline"} size={18} color="#0056b3" /> <Text style={styles.linkText}> {title === 'Archivo Adjunto' ? 'Ver Archivo' : 'Escuchar Audio'}</Text> </TouchableOpacity> )} {title === 'Archivo Adjunto' && !linkUrl && <Text style={styles.noAttachmentText}>Sin archivo adjunto</Text>} </View> ); };
+  const handleOpenLink = async (url: string | undefined | null) => {
+    if (!url) return;
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) await Linking.openURL(url);
+      else Alert.alert("Error", `No se puede abrir URL: ${url}`);
+    } catch {
+      Alert.alert("Error", "Error al abrir enlace.");
+    }
+  };
 
-  // Datos para la tarjeta
+  const renderDetailSection = (title: string, content: string | null | undefined, linkUrl?: string | null) => {
+    if (!content && !linkUrl) return null;
+    return (
+      <View style={styles.detailSection}>
+        <Text style={styles.detailTitle}>{title}</Text>
+        {content && <Text style={styles.detailContent}>{content}</Text>}
+        {linkUrl && (
+          <TouchableOpacity onPress={() => handleOpenLink(linkUrl)} style={styles.linkButton}>
+            <Ionicons name={title === 'Archivo Adjunto' ? "attach-outline" : "volume-medium-outline"} size={18} color="#0056b3" />
+            <Text style={styles.linkText}> {title === 'Archivo Adjunto' ? 'Ver Archivo' : 'Escuchar Audio'}</Text>
+          </TouchableOpacity>
+        )}
+        {title === 'Archivo Adjunto' && !linkUrl && <Text style={styles.noAttachmentText}>Sin archivo adjunto</Text>}
+      </View>
+    );
+  };
+
   const cardTitle = incident.marca && incident.modelo ? `${incident.marca} ${incident.modelo}` : incident.vehiculo?.trim() || incident.titulo || 'Detalle';
   const cardSubtitle = incident.titulo === cardTitle ? (incident.sintomas || '') : (incident.titulo || '');
 
-  // --- Renderizado Principal ---
   return (
     <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF"/>
-          {/* Header Superior (3 Botones) */}
-                 <View style={styles.topHeaderContainer}>
-                   {topHeaderButtons.map((button, index) => {
-                     const Icon = button.iconComponent;
-              
-                     // Determinar estilos por posición
-                     const isFirst = index === 0;
-                     const isLast = index === topHeaderButtons.length - 1;
-              
-                     return (
-                       <TouchableOpacity
-                         key={button.id}
-                         style={[
-                           styles.topHeaderButton,
-                           isFirst && styles.firstButton,
-                           isLast && styles.lastButton,
-                           !isFirst && !isLast && styles.middleButton
-                         ]}
-                         onPress={() => navigateTo(button.id)}
-                         activeOpacity={0.7}
-                       >
-                            <Icon
-                             width={headerIconSize}
-                             height={headerIconSize}
-                             fill={isFirst ? '#2c4391' : '#ffffff'}
-                            />
-                           <Text style={[
-                             styles.topHeaderText,
-                             isFirst && { color: '#000000' },
-                             !isFirst && { color: '#ffffff' }
-                            ]}>{button.title}</Text>
-                       </TouchableOpacity>
-                     );
-                   })}
-                 </View>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-            <View style={styles.card}>
-            <TouchableOpacity style={styles.mainCard} onPress={toggleExpand} activeOpacity={0.9}>
-                <View style={styles.cardHeader}>
-                    <View style={styles.cardHeaderText}>
-                        <Text style={styles.cardTitle}>{cardTitle}</Text>
-                        <Text style={styles.cardSubtitle}>{cardSubtitle}</Text></View>
-                        <Text style={styles.cardIconText}>-</Text>
-                </View>
-                    {isExpanded && (
-                        <View style={styles.cardDetails}>
-                            <Text>Datos de Incidencia</Text>
-                            {/* --- Renderiza detalles usando 'incident' --- */}
-                            <View style={styles.detailSubSection}>
-                                <Text style={styles.detailSubTitle}>Vehículo</Text>
-                                {/* Usa optional chaining por seguridad */}
-                                <Text style={styles.detailText}><Text style={styles.detailLabel}>Marca:</Text> {incident.marca || ''}</Text>
-                                <Text style={styles.detailText}><Text style={styles.detailLabel}>Potencia:</Text> {incident.potencia || ''}</Text>
-                                <Text style={styles.detailText}><Text style={styles.detailLabel}>Sistema:</Text> {incident.sistema || ''}</Text>
-                                <Text style={styles.detailText}><Text style={styles.detailLabel}>Modelo:</Text> {incident.modelo || ''}</Text>
-                                <Text style={styles.detailText}><Text style={styles.detailLabel}>Creacion:</Text> {incident.creacionAsistencia || ''}</Text> {/* Ajustado a fecha asistencia */}
-                                <Text style={styles.detailText}><Text style={styles.detailLabel}>Código Motor:</Text> {incident.codigomotor || ''}</Text>
-                            </View>
-                            {renderDetailSection("Título de la Incidencia", incident.titulo)}
-                            {renderDetailSection("Síntomas", incident.sintomas)}
-                            {/* Muestra seguimientos */}
-                            {Array.isArray(incident.asistenciaSeguimientos) && incident.asistenciaSeguimientos.length > 0 && (
-                                <View style={styles.detailSection}>
-                                    <Text style={styles.detailTitle}>Seguimiento</Text>
-                                    {incident.asistenciaSeguimientos.map((item, index) => (
-                                        <View key={`seg-${item.id || index}`} style={styles.commentBox}>
-                                            {item.fechacomentario && <Text style={styles.detailDate}>({item.fechacomentario})</Text>}
-                                            {item.comentario ? <Text style={styles.detailContent}>{item.comentario}</Text> : <Text style={styles.noDataText}>(Sin comentario)</Text>}
-                                            {item.solucion && <Text style={styles.detailSolution}><Text style={styles.detailLabel}>Solución:</Text> {item.solucion}</Text>}
-                                        </View>
-                                    ))}
-                                </View>
-                            )}
-                            {/* Archivo Adjunto (Prioriza 'archivo' sobre 'documentacion') */}
-                            {renderDetailSection("Archivo Adjunto", null, incident.archivo || incident.documentacion)}
-                        </View>
-                    )}
-                </TouchableOpacity>
-                <View style={styles.contentButtoms}>
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <VolverIcon width={50} height={50} />
-                    <Text style={styles.backButtonText}>Volver</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <RefreshIcon width={50} height={50} />
-                    <Text style={styles.backButtonText}>Responder</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-                    <CerrarIcon width={50} height={50} />
-                    <Text style={styles.backButtonText}>Cerrar</Text>
-                </TouchableOpacity>
-                </View>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <View style={styles.topHeaderContainer}>
+        {topHeaderButtons.map((button, index) => {
+          const Icon = button.iconComponent;
+          const isFirst = index === 0;
+          const isLast = index === topHeaderButtons.length - 1;
+          return (
+            <TouchableOpacity
+              key={button.id}
+              style={[
+                styles.topHeaderButton,
+                isFirst && styles.firstButton,
+                isLast && styles.lastButton,
+                !isFirst && !isLast && styles.middleButton
+              ]}
+              onPress={() => navigation.navigate(button.id)}
+              activeOpacity={0.7}
+            >
+              <Icon width={headerIconSize} height={headerIconSize} fill={isFirst ? '#2c4391' : '#ffffff'} />
+              <Text style={[styles.topHeaderText, isFirst && { color: '#000000' }, !isFirst && { color: '#ffffff' }]}>{button.title}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.card}>
+          <TouchableOpacity style={styles.mainCard} onPress={toggleExpand} activeOpacity={0.9}>
+            <View style={styles.cardHeader}>
+              <View style={styles.cardHeaderText}>
+                <Text style={styles.cardTitle}>{cardTitle}</Text>
+                <Text style={styles.cardSubtitle}>{cardSubtitle}</Text>
+              </View>
+              <Text style={styles.cardIconText}>-</Text>
             </View>
-        </ScrollView>
+            {isExpanded && (
+              <View style={styles.cardDetails}>
+                <Text>Datos de Incidencia</Text>
+                <View style={styles.detailSubSection}>
+                  <Text style={styles.detailSubTitle}>Vehículo</Text>
+                  <Text style={styles.detailText}><Text style={styles.detailLabel}>Marca:</Text> {incident.marca || ''}</Text>
+                  <Text style={styles.detailText}><Text style={styles.detailLabel}>Potencia:</Text> {incident.potencia || ''}</Text>
+                  <Text style={styles.detailText}><Text style={styles.detailLabel}>Sistema:</Text> {incident.sistema || ''}</Text>
+                  <Text style={styles.detailText}><Text style={styles.detailLabel}>Modelo:</Text> {incident.modelo || ''}</Text>
+                  <Text style={styles.detailText}><Text style={styles.detailLabel}>Creacion:</Text> {incident.creacionAsistencia || ''}</Text>
+                  <Text style={styles.detailText}><Text style={styles.detailLabel}>Código Motor:</Text> {incident.codigomotor || ''}</Text>
+                </View>
+                {renderDetailSection("Título de la Incidencia", incident.titulo)}
+                {renderDetailSection("Síntomas", incident.sintomas)}
+                {Array.isArray(incident.asistenciaSeguimientos) && incident.asistenciaSeguimientos.length > 0 && (
+                  <View style={styles.detailSection}>
+                    <Text style={styles.detailTitle}>Seguimiento</Text>
+                    {incident.asistenciaSeguimientos.map((item, index) => (
+                      <View key={`seg-${item.id || index}`} style={styles.commentBox}>
+                        {item.fechacomentario && <Text style={styles.detailDate}>({item.fechacomentario})</Text>}
+                        {item.comentario ? <Text style={styles.detailContent}>{item.comentario}</Text> : <Text style={styles.noDataText}>(Sin comentario)</Text>}
+                        {item.solucion && <Text style={styles.detailSolution}><Text style={styles.detailLabel}>Solución:</Text> {item.solucion}</Text>}
+                      </View>
+                    ))}
+                  </View>
+                )}
+                {renderDetailSection("Archivo Adjunto", null, incident.archivo || incident.documentacion)}
+              </View>
+            )}
+          </TouchableOpacity>
+          <View style={styles.contentButtoms}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+              <VolverIcon width={50} height={50} />
+              <Text style={styles.backButtonText}>Volver</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.backButton} onPress={() => setModalVisible(true)} activeOpacity={0.7}>
+              <RefreshIcon width={50} height={50} />
+              <Text style={styles.backButtonText}>Responder</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+              <CerrarIcon width={50} height={50} />
+              <Text style={styles.backButtonText}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Modal de Respuesta */}
+      <Modal visible={modalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+                <View style={styles.cardContent}>
+                    <Text style={styles.modalTitle}>{cardTitle}</Text>
+                    <TextInput
+                    style={styles.modalInput}
+                    placeholder="Escribe tu respuesta..."
+                    value={responseText}
+                    onChangeText={setResponseText}
+                    multiline
+                    />
+             </View>
+                    <View style={styles.modalButtons}>
+                        <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalCloseButton}>
+                            <VolverIcon width={50} height={50} />
+                            <Text style={styles.modalCloseButtonText}>Cancelar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => { setModalVisible(false); Alert.alert("Respuesta enviada", responseText); }}
+                        style={styles.modalSubmitButton}
+                        >
+                            <Text style={styles.modalSubmitButtonText}>Responder</Text>
+                             <CheckIcon width={60} height={60} />
+                        </TouchableOpacity>
+                    </View>
+            </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -328,12 +355,81 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10, // Padding para área de toque
         paddingVertical: 5,
     },
+
+    // MODAL
+
     backButtonText: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#0033A0',
         marginLeft: 5,
-    }
+    },
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 20,
+},
+  modalContainer: {
+      backgroundColor: 'white',
+      borderRadius: 20,
+      borderTopLeftRadius: 0,
+      borderTopEndRadius: 0,
+      padding: 20,
+      margin: 1,
+  },
+
+      cardContent: { 
+      backgroundColor: '#ededed',
+      marginTop: -20,
+      borderRadius: 20,
+      borderTopLeftRadius: 0,
+      borderTopEndRadius: 0,
+    },
+
+  modalTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 10,
+    marginTop: 20,
+  },
+  modalInput: {
+    borderRadius: 20,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    padding: 10,
+    height: 100,
+    textAlignVertical: 'top',
+    marginBottom: 15,
+    backgroundColor: '#ffffff',
+    margin: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalCloseButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 6,
+  },
+  modalCloseButtonText: {
+  alignSelf: 'center',
+  padding: 5,
+  fontSize: 16,
+  },
+  modalSubmitButton: {
+    flexDirection:'row',
+    padding: 10,
+    borderRadius: 6,
+  },
+  modalSubmitButtonText: {
+      alignSelf: 'center',
+      fontSize: 16,
+       padding: 5,
+  },
 });
 
 export default IncidentDetailScreen;

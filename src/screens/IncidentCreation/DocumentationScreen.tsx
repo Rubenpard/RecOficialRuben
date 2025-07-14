@@ -252,7 +252,11 @@ const styles = StyleSheet.create({
     customHeaderTextActive: { color: '#0033A0', },
     scrollContainer: { flexGrow: 1, padding: 15, paddingTop: 10, },
     contentCard: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 15, padding: 20, paddingBottom: 10, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, },
-    headerSection: { alignItems: 'center', marginBottom: 25, flexDirection: 'row' },
+    headerSection: { 
+      alignItems: 'center', 
+      marginBottom: 25, 
+      flexDirection: 'row' 
+    },
     illustration: {
       width: 80,
       height: 80,
@@ -262,7 +266,11 @@ const styles = StyleSheet.create({
       height: 20, 
       resizeMode: 'contain', 
     },
-    textContent: { flex: 1,paddingHorizontal: 15, paddingRight: 20, },
+    textContent: { 
+      flex: 1,
+      paddingHorizontal: 15, 
+      paddingRight: 20, 
+    },
     illustrationPlaceholder: { width: 100, height: 70, backgroundColor: '#EAEAEA', borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 10, },
     cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#0033A0', marginBottom: 8 },
     description: { fontSize: 15, color: '#555', lineHeight: 21, marginBottom: 20, },
