@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, Modal, Pressable, ScrollView,
-  SafeAreaView, RefreshControl, Platform, StatusBar, Alert
+  SafeAreaView, RefreshControl, Platform, StatusBar, Alert, Dimensions,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -38,6 +38,39 @@ const topHeaderButtons: TopHeaderButtonData[] = [
     { id: 'Calendar', title: 'Inicio',  iconComponent: HomeIcon },
 
 ];
+
+//Renderizado de filterButton
+
+// const screenWidth = Dimensions.get('window').width;
+// const spacing = 0; // Espacio entre columnas
+// const columns = 3;
+
+// const itemWidth = (screenWidth - spacing * (columns - 1)) / columns;
+
+const buttonStyles = {
+  marca: {
+    backgroundColor: '#b3b3af',
+    borderTopLeftRadius: 12,
+  },
+  modelo: {
+    backgroundColor: '#c5c5c5',
+
+  },
+  potencia: {
+    backgroundColor: '#dadada',
+    borderTopRightRadius: 20,
+  },
+  periodo: {
+    backgroundColor: '#a4aad6',
+
+  },
+  sistema: {
+    backgroundColor: '#babedf',
+  },
+  titulo: {
+    backgroundColor: '#d5d3ed',
+  },
+};
 
 
 type IncidentListScreenProps = NativeStackScreenProps<HomeStackParamList, 'IncidentList'>;
@@ -110,7 +143,8 @@ const IncidentListScreen: React.FC<IncidentListScreenProps> = ({ route, navigati
 
   // --- Lógica de Filtros ---
   const filterOptionsData: Record<IncidentFilterField, string[]> = { /* ... Tus opciones de filtro simuladas o reales ... */ };
-  const getModelosForMarca = (marca: string | null): string[] => { /* ... Tu lógica para modelos ... */ return ['(Selecciona Marca)']; };
+  const getModelosForMarca = (marca: string | null): string[] => { /* ... Tu lógica para modelos ... */ 
+    return ['(Selecciona Marca)']; };
   const showFilterModal = (filterType: IncidentFilterField) => { if (filterType === 'titulo') { Alert.alert("Filtro Título", "Búsqueda por título pendiente."); return; } setCurrentFilterEditing(filterType); setIsFilterModalVisible(true); };
   const handleFilterSelect = (value: string | null) => { if (currentFilterEditing) { setFilters(prev => ({ ...prev, [currentFilterEditing]: value, /* Limpiar dependientes */ })); } setIsFilterModalVisible(false); setCurrentFilterEditing(null); };
   const resetFilters = () => { setFilters({}); };
@@ -119,8 +153,36 @@ const IncidentListScreen: React.FC<IncidentListScreenProps> = ({ route, navigati
   const handleLoadMore = () => { if (showFilters && canLoadMore && !isLoading && !isLoadingMore && !isRefreshing && !onEndReachedCalledDuringMomentum.current) { onEndReachedCalledDuringMomentum.current = true; loadIncidents(false, true); } };
 
   // --- Renderizado de Componentes Internos ---
-  const renderCustomHeader = () => ( <View style={styles.customHeaderContainer}> <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}> <HeaderIcon width={28} height={28} fill="#0033A0" /> <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>{headerTitle}</Text> </View> <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.navigate('Home')}> <HomeIcon width={28} height={28} fill="#6C757D" /> <Text style={styles.customHeaderText}>Inicio</Text> </TouchableOpacity> </View> );
-  const renderFilterBar = () => { if (!showFilters) return null; const renderFilterButton = (fType: IncidentFilterField, lbl: string) => ( <TouchableOpacity key={fType} style={styles.filterButton} onPress={() => showFilterModal(fType)} disabled={fType === 'titulo'}> <Text style={styles.filterButtonText}>{filters[fType] || lbl}</Text> </TouchableOpacity> ); return ( <View style={styles.filterBarContainer}> <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterBar}> {renderFilterButton('marca', 'Marca')} {renderFilterButton('modelo', 'Modelo')} {renderFilterButton('periodo', 'Periodo')} {renderFilterButton('sistema', 'Sistema')} </ScrollView> {Object.values(filters).some(v => v) && ( <TouchableOpacity onPress={resetFilters} style={styles.resetButton}><Text style={styles.resetButtonText}>Restablecer</Text></TouchableOpacity> )} </View> ); };
+  const renderCustomHeader = () => ( 
+  <View style={styles.customHeaderContainer}> 
+  <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}> 
+    <HeaderIcon width={28} height={28} fill="#0033A0" /> 
+    <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>{headerTitle}</Text> 
+    </View> 
+    <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.navigate('Home')}>
+       <HomeIcon width={28} height={28} fill="#6C757D" /> 
+       <Text style={styles.customHeaderText}>Inicio</Text> 
+       </TouchableOpacity> 
+       </View> );
+  const renderFilterBar = () => { if (!showFilters) return null; const renderFilterButton = 
+  (fType: IncidentFilterField, lbl: string) => 
+  ( <TouchableOpacity key={fType} 
+   style={[styles.filterButton, buttonStyles[fType]]}
+  onPress={() => showFilterModal(fType)} 
+  disabled={fType === 'titulo'}> 
+  <Text style={styles.filterButtonText}>
+    {filters[fType] || lbl}</Text> </TouchableOpacity> ); 
+    return ( <View style={styles.filterBarContainer}> 
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} 
+    contentContainerStyle={styles.filterBar}> 
+  {renderFilterButton('marca', 'Marca')} 
+  {renderFilterButton('modelo', 'Modelo')} 
+  {renderFilterButton('potencia', 'Potencia')} 
+  {renderFilterButton('periodo', 'Periodo')}
+   {renderFilterButton('sistema', 'Sistema')} 
+     {renderFilterButton('titulo', 'Titulo')} 
+   </ScrollView> 
+   {Object.values(filters).some(v => v) && ( <TouchableOpacity onPress={resetFilters} style={styles.resetButton}><Text style={styles.resetButtonText}>Restablecer</Text></TouchableOpacity> )} </View> ); };
   const renderIncidentItem = ({ item }: { item: AsistenciaListItem }) => { const displayTitle = item.marca && item.modelo ? `${item.marca} ${item.modelo}` : item.vehiculo?.trim() || item.titulo || 'Incidencia'; const displaySubtitle = item.titulo === displayTitle ? (item.sintomas || '') : (item.titulo || ''); 
   return ( 
   <>  
@@ -144,7 +206,9 @@ const IncidentListScreen: React.FC<IncidentListScreenProps> = ({ route, navigati
     </>
      );
     };
-  const renderFilterModalContent = () => { if (!currentFilterEditing) return null; let options: string[] = []; if (currentFilterEditing === 'modelo') { options = getModelosForMarca(filters.marca ?? null); } else { options = filterOptionsData[currentFilterEditing] || []; } const optionsWithClear = ["(Limpiar Filtro)", ...options]; return ( <TouchableOpacity activeOpacity={1} style={styles.modalContainer}> <Text style={styles.modalTitle}>Seleccionar {currentFilterEditing}</Text> <FlatList data={optionsWithClear} keyExtractor={(item) => item} renderItem={({ item }) => ( <TouchableOpacity style={styles.modalOption} onPress={() => handleFilterSelect(item === "(Limpiar Filtro)" ? null : item)} disabled={item.startsWith('(') && item !== "(Limpiar Filtro)"}> <Text style={[styles.modalOptionText, (item.startsWith('(') && item !== "(Limpiar Filtro)") && styles.modalOptionDisabled]}>{item}</Text> </TouchableOpacity> )} ItemSeparatorComponent={() => <View style={styles.separator} />} /> <TouchableOpacity style={styles.modalCloseButton} onPress={() => setIsFilterModalVisible(false)}><Text style={styles.modalCloseButtonText}>Cancelar</Text></TouchableOpacity> </TouchableOpacity> ); };
+  const renderFilterModalContent = () => { if (!currentFilterEditing) return null; let options: string[] = []; if (currentFilterEditing === 'modelo') { options = getModelosForMarca(filters.marca ?? null); } else { options = filterOptionsData[currentFilterEditing] || []; } const optionsWithClear = ["(Limpiar Filtro)", ...options]; return ( <TouchableOpacity activeOpacity={1} style={styles.modalContainer}> 
+  <Text style={styles.modalTitle}>Seleccionar {currentFilterEditing}</Text> 
+  <FlatList data={optionsWithClear} keyExtractor={(item) => item} renderItem={({ item }) => ( <TouchableOpacity style={styles.modalOption} onPress={() => handleFilterSelect(item === "(Limpiar Filtro)" ? null : item)} disabled={item.startsWith('(') && item !== "(Limpiar Filtro)"}> <Text style={[styles.modalOptionText, (item.startsWith('(') && item !== "(Limpiar Filtro)") && styles.modalOptionDisabled]}>{item}</Text> </TouchableOpacity> )} ItemSeparatorComponent={() => <View style={styles.separator} />} /> <TouchableOpacity style={styles.modalCloseButton} onPress={() => setIsFilterModalVisible(false)}><Text style={styles.modalCloseButtonText}>Cancelar</Text></TouchableOpacity> </TouchableOpacity> ); };
   const renderFilterModal = () => { if (!showFilters) return null; return ( <Modal transparent={true} visible={isFilterModalVisible} animationType="fade" onRequestClose={() => setIsFilterModalVisible(false)}> <Pressable style={styles.modalOverlay} onPress={() => setIsFilterModalVisible(false)}> {renderFilterModalContent()} </Pressable> </Modal> ); };
   const renderFooter = () => { if (!isLoadingMore || !canLoadMore) return null; return ( <View style={styles.footerLoader}><ActivityIndicator size="small" color="#0033A0" /></View> ); };
 
@@ -216,18 +280,19 @@ const styles = StyleSheet.create({
       flex: 1,
       backgroundColor: '#3f4c53',
     },
-    customHeaderContainer: { 
-      flexDirection: 'row', 
-      backgroundColor: '#FFFFFF', 
-      paddingHorizontal: 5, 
-      paddingVertical: 8, 
-      margin: 10, 
-      borderRadius: 25, 
-      elevation: 3, 
-      shadowColor: '#000', 
-      shadowOffset: { width: 0, height: 1 }, 
-      shadowOpacity: 0.2, 
-      shadowRadius: 2, },
+    customHeaderContainer: {
+      flexDirection: 'row',
+      backgroundColor: '#FFFFFF',
+      paddingHorizontal: 5,
+      paddingVertical: 8,
+      margin: 10,
+      borderRadius: 25,
+      elevation: 3,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+     },
     
      // --- Header Superior ---
   topHeaderContainer: {
@@ -269,7 +334,16 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
   },
 
-    customHeaderButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 5, borderRadius: 20, backgroundColor: '#E9ECEF', },
+    customHeaderButton: { 
+      flex: 1, 
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      paddingVertical: 10, 
+      paddingHorizontal: 5, 
+      borderRadius: 20, 
+      backgroundColor: '#E9ECEF', 
+    },
     customHeaderButtonActive: { backgroundColor: '#FFFFFF', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 1.5, },
     customHeaderText: { marginLeft: 8, fontSize: 14, fontWeight: 'bold', color: '#6C757D', },
     customHeaderTextActive: { color: '#0033A0', },
@@ -279,9 +353,28 @@ const styles = StyleSheet.create({
     retryButton: { backgroundColor: '#0033A0', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 5, marginTop: 10, },
     retryButtonText: { color: '#FFFFFF', fontSize: 16, },
     emptyText: { fontSize: 16, color: '#888', textAlign: 'center', marginTop: 50, },
-    filterBarContainer: { backgroundColor: '#FFFFFF', paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: '#E0E0E0', shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.18, shadowRadius: 1.00, elevation: 1, },
-    filterBar: { paddingHorizontal: 10, paddingVertical: 10, alignItems: 'center', },
-    filterButton: { backgroundColor: '#E8E8E8', paddingVertical: 8, paddingHorizontal: 15, borderRadius: 15, marginRight: 10, borderWidth: 1, borderColor: '#D0D0D0', minWidth: 80, alignItems: 'center', },
+    filterBarContainer: { 
+      backgroundColor: '#FFFFFF', 
+      paddingBottom: 10, 
+      margin: 20,
+      borderTopEndRadius: 20,
+      borderTopLeftRadius: 20,
+      marginBottom: -36,
+      zIndex: 1000,
+    },
+    filterBar: { 
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    filterButton: {
+      paddingVertical: 8,
+      alignItems: 'center',
+       width: '33.32%',
+       left: 0,
+       paddingHorizontal: 9,
+    },
     filterButtonText: { color: '#444', fontSize: 13, fontWeight: '500', },
     resetButton: { alignSelf: 'flex-start', marginLeft: 15, marginTop: 5, },
     resetButtonText: { color: '#0056b3', fontSize: 13, textDecorationLine: 'underline', },
