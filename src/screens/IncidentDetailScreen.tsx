@@ -18,8 +18,6 @@ import CerradasIcon from '../assets/icons/cerradas.svg';
 import HomeIcon from '../assets/icons/home.svg';
 import CheckIcon from '../assets/icons/check.svg'
 
-export type IncidentListType = 'Abiertas' | 'Cerradas' | 'Globales' | 'Expres';
-
 const gridPaddingVertical = 15;
 const gridPaddingHorizontal = 15;
 const headerIconSize = 60;
@@ -42,17 +40,31 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 type IncidentDetailScreenProps = NativeStackScreenProps<MainStackParamList, 'IncidentDetail'>;
 
-navigation.navigate('IncidentDetail', {
-  incidentId: item.id,
-  parentListType: 'Abiertas',
-});
-
 const IncidentDetailScreen: React.FC<IncidentDetailScreenProps> = ({ route, navigation }) => {
   const { incident } = route.params;
   const [isExpanded, setIsExpanded] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [responseText, setResponseText] = useState('');
+  
+  
+ const isClosed = incident.estado !== 0;
+const parentListName = isClosed ? 'Cerradas' : 'Abiertas';
 
+const buttonsVisibility = {
+  Abiertas: { showVolver: true, showResponder: true, showCerrar: true, showReabrir: false },
+  Cerradas: { showVolver: true, showResponder: false, showCerrar: false,showReabrir: true },
+  Globales: { showVolver: true, showResponder: true, showCerrar: false, showReabrir: true },
+  Expres: { showVolver: true, showResponder: false, showCerrar: true,showReabrir: true },
+};
+
+const { showVolver, showResponder, showCerrar, showReabrir } =
+  buttonsVisibility[parentListName] || {
+    showVolver: true,
+    showResponder: true,
+    showCerrar: true,
+    showReabrir: true,
+  };
+  
   if (!incident || typeof incident !== 'object') {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -68,9 +80,7 @@ const IncidentDetailScreen: React.FC<IncidentDetailScreenProps> = ({ route, navi
     );
   }
 
-  const isClosed = incident.estado !== 0;
-  const parentListName = isClosed ? 'Cerradas' : 'Abiertas';
-  const ParentIcon = isClosed ? CerradasIcon : AbiertasIcon;
+
 
   const toggleExpand = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -175,18 +185,33 @@ const IncidentDetailScreen: React.FC<IncidentDetailScreenProps> = ({ route, navi
             )}
           </TouchableOpacity>
           <View style={styles.contentButtoms}>
+            {showVolver && (
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
               <VolverIcon width={50} height={50} />
               <Text style={styles.backButtonText}>Volver</Text>
             </TouchableOpacity>
+            )}
+             {showResponder && (
             <TouchableOpacity style={styles.backButton} onPress={() => setModalVisible(true)} activeOpacity={0.7}>
               <RefreshIcon width={50} height={50} />
               <Text style={styles.backButtonText}>Responder</Text>
             </TouchableOpacity>
+             )}
+
+            {showCerrar && (
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
               <CerrarIcon width={50} height={50} />
               <Text style={styles.backButtonText}>Cerrar</Text>
             </TouchableOpacity>
+            )}
+
+              {showReabrir && (
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+              <CerrarIcon width={50} height={50} />
+              <Text style={styles.backButtonText}>Reabrir Incidencia</Text>
+            </TouchableOpacity>
+            )}
+            
           </View>
         </View>
       </ScrollView>
