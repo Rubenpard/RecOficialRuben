@@ -34,6 +34,10 @@ const CallMeScreen: React.FC<CallMeScreenProps> = ({ navigation }) => {
   const [callRequested, setCallRequested] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+     const navigateTo = (screen: keyof MainStackParamList) => {
+        navigation.navigate(screen);
+      };
+  
 
 
 
@@ -127,7 +131,7 @@ const topHeaderButtons: TopHeaderButtonData[] = [
                                isLast && styles.lastButton,
                                !isFirst && !isLast && styles.middleButton
                              ]}
-                             onPress={() => navigateTo(button.id)}
+                             onPress={() => navigateTo('Home')}
                              activeOpacity={0.7}
                            >
                             <View style={styles.headerContent}>

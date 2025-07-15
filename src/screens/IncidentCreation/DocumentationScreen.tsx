@@ -9,7 +9,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { IncidentCreationStackParamList } from '../../navigation/IncidentCreationStackNavigator';
 import { useIncidentCreation } from '../../context/IncidentCreationContext';
-
+import { useNavigation } from '@react-navigation/native';
 
 // --- Importa Iconos SVG para el Header ---
 import MPerfilIcon from '../../assets/icons/usuarioSvg.svg';
@@ -33,6 +33,7 @@ interface TopHeaderButtonData {
     iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
 }
 
+
 // --- Datos ---
 const topHeaderButtons: TopHeaderButtonData[] = [
     { id: 'Profile', title: 'Mi Perfil',  iconComponent: MPerfilIcon },
@@ -40,13 +41,18 @@ const topHeaderButtons: TopHeaderButtonData[] = [
 
 ];
 
+
+
 // Placeholder para la ilustración interna
 const DocumentationScreen: React.FC<DocumentationScreenProps> = ({ navigation }) => {
   const { incidentData, updateField } = useIncidentCreation();
   const { matricula, docAsset } = incidentData;
 
   const [isNextEnabled, setIsNextEnabled] = useState<boolean>(false);
-
+  
+  const navigateTo = (screen: keyof MainStackParamList) => {
+      navigation.navigate(screen);
+    };
   useEffect(() => {
     setIsNextEnabled(!!matricula?.trim() || !!docAsset);
   }, [matricula, docAsset]);
@@ -121,7 +127,7 @@ const DocumentationScreen: React.FC<DocumentationScreenProps> = ({ navigation })
                    isLast && styles.lastButton,
                    !isFirst && !isLast && styles.middleButton
                  ]}
-                 onPress={() => navigateTo(button.id)}
+                 onPress={() => navigateTo('Home')}
                  activeOpacity={0.7}
                >
                     <Icon

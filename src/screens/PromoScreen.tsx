@@ -39,6 +39,9 @@
     const [isLoading, setIsLoading] = useState<boolean>(false); // Empezar sin cargar, usar useFocusEffect
     const [isRefreshing, setIsRefreshing] = useState<boolean>(false); // Para pull-to-refresh
     const [error, setError] = useState<string | null>(null);
+      const navigateTo = (screen: keyof MainStackParamList) => {
+          navigation.navigate(screen);
+        };
 
     // --- Obtiene datos del Contexto ---
     const { userEmail, isAuthenticated } = useAuth(); // Necesitamos userEmail y saber si está autenticado
@@ -172,7 +175,7 @@
                     isLast && styles.lastButton,
                     !isFirst && !isLast && styles.middleButton
                   ]}
-                  onPress={() => navigateTo(button.id)}
+                  onPress={() => navigateTo('Home')}
                   activeOpacity={0.7}
                 >
                     <Icon

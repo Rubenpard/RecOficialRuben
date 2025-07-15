@@ -56,6 +56,9 @@ const AIChatScreen: React.FC<AIChatScreenProps> = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [aiResponse, setAiResponse] = useState<string | null>(null);
+    const navigateTo = (screen: keyof MainStackParamList) => {
+      navigation.navigate(screen);
+    };
 
   // --- Manejador de Envío de Mensaje ---
   const handleSendMessage = useCallback(async () => {
@@ -116,7 +119,7 @@ const AIChatScreen: React.FC<AIChatScreenProps> = ({ navigation }) => {
                                isLast && styles.lastButton,
                                !isFirst && !isLast && styles.middleButton
                              ]}
-                             onPress={() => navigateTo(button.id)}
+                             onPress={() => navigateTo('Home')}
                              activeOpacity={0.7}
                            >
                                 <Icon

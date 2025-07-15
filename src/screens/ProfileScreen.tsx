@@ -9,10 +9,12 @@ import { TabView, SceneMap, TabBar, TabBarProps, Route, SceneRendererProps } fro
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext'; // Hook del contexto
+import { useNavigation } from '@react-navigation/native';
 
 // Importa las funciones API si las llamas DIRECTAMENTE desde aquí (mejor si el contexto maneja esto)
 import { getUserProfileApi } from '../api/authService';// Importa los tipos User y Company (asegúrate que estén actualizados)
 import type { User } from '../types/api/auth';// --- Importa Iconos SVG para el Header Superior ---
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MPerfilIcon from '../assets/icons/usuarioSvg.svg';
 import CalendarioIcon from '../assets/icons/calendario.svg';
 import PromoIcon from '../assets/icons/promoHome.svg';
@@ -23,7 +25,7 @@ import LogOutIcon from '../assets/icons/logout.svg';
 // --- Tipos ---
 // Asegúrate de importar MainStackParamList desde donde esté definido, por ejemplo:
 import type { MainStackParamList } from '../navigation/types'; // Ajusta la ruta según tu proyecto
-
+type ProfileScreenProps = NativeStackScreenProps<MainStackParamList, 'Profile'>;
 interface TopHeaderButtonData {
     id: keyof MainStackParamList;
     title: string;
@@ -36,6 +38,7 @@ const topHeaderButtons: TopHeaderButtonData[] = [
     { id: 'Calendar', title: 'Inicio',  iconComponent: homeIcon },
 
 ];
+
 
 /* ==========================================================================
    Componente Helper para Renderizar Campos
@@ -52,6 +55,8 @@ const renderProfileField = ( label: string, value: string | undefined | null, is
       )}
     </View>
 );
+
+
 
 /* ==========================================================================
    Componentes para cada Pestaña (Scenes)
@@ -112,11 +117,14 @@ const UserTabScene: React.FC<UserTabSceneProps> = ({ userProfile, isLoading }) =
    ========================================================================== */
    const ProfileScreen: React.FC = () => {
     const { userId, logout } = useAuth(); // Solo necesitamos userId y logout
-  
+  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
     // --- Estado local para el perfil completo y carga/error ---
     const [userProfile, setUserProfile] = useState<User | null>(null); // Un solo estado para todo
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+      const navigateTo = (screen: keyof MainStackParamList) => {
+          navigation.navigate(screen);
+        };
   
     // --- Estado del TabView (sin cambios) ---
     const [index, setIndex] = useState(0);
@@ -201,7 +209,7 @@ const UserTabScene: React.FC<UserTabSceneProps> = ({ userProfile, isLoading }) =
              isLast && styles.lastButton,
              !isFirst && !isLast && styles.middleButton
            ]}
-           onPress={() => navigateTo(button.id)}
+           onPress={() => navigateTo('Home')}
            activeOpacity={0.7}
          >
               <Icon

@@ -72,6 +72,10 @@ const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) => {
   const [isUpcomingExpanded, setIsUpcomingExpanded] = useState<boolean>(true);
   const [isPastExpanded, setIsPastExpanded] = useState<boolean>(true);
 
+    const navigateTo = (screen: keyof MainStackParamList) => {
+      navigation.navigate(screen);
+    };
+
   // --- Carga de Datos ---
   const loadCalendarData = useCallback(async (isRefresh = false) => {
     if (!isAuthenticated || !username) { setAllFormaciones([]); setError(null); return; }

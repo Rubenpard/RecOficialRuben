@@ -79,6 +79,10 @@ const PAGE_LIMIT = 10;
 const IncidentListScreen: React.FC<IncidentListScreenProps> = ({ route, navigation }) => {
   const { type: incidentType } = route.params;
   const { userId } = useAuth();
+     const navigateTo = (screen: keyof MainStackParamList) => {
+        navigation.navigate(screen);
+      };
+  
 
   // --- Estados ---
   const [incidents, setIncidents] = useState<AsistenciaListItem[]>([]);
@@ -234,7 +238,7 @@ const IncidentListScreen: React.FC<IncidentListScreenProps> = ({ route, navigati
                            isLast && styles.lastButton,
                            !isFirst && !isLast && styles.middleButton
                          ]}
-                         onPress={() => navigateTo(button.id)}
+                         onPress={() => navigateTo('Home')}
                          activeOpacity={0.7}
                        >
                             <Icon
