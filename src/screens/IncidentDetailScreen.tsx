@@ -18,6 +18,8 @@ import CerradasIcon from '../assets/icons/cerradas.svg';
 import HomeIcon from '../assets/icons/home.svg';
 import CheckIcon from '../assets/icons/check.svg'
 
+export type IncidentListType = 'Abiertas' | 'Cerradas' | 'Globales' | 'Expres';
+
 const gridPaddingVertical = 15;
 const gridPaddingHorizontal = 15;
 const headerIconSize = 60;
@@ -39,6 +41,11 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 type IncidentDetailScreenProps = NativeStackScreenProps<MainStackParamList, 'IncidentDetail'>;
+
+navigation.navigate('IncidentDetail', {
+  incidentId: item.id,
+  parentListType: 'Abiertas',
+});
 
 const IncidentDetailScreen: React.FC<IncidentDetailScreenProps> = ({ route, navigation }) => {
   const { incident } = route.params;

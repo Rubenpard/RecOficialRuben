@@ -57,7 +57,7 @@ interface TopHeaderButtonData {
 // --- Datos ---
 const topHeaderButtons: TopHeaderButtonData[] = [
     { id: 'Profile', title: 'Llamame',  iconComponent: LlamameHeaderIcon },
-    { id: 'Calendar', title: 'Inicio',  iconComponent: HomeIcon },
+    { id: 'Home', title: 'Inicio',  iconComponent: HomeIcon },
 
 ];
 
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     marginTop: -14, // Espacio icono-texto
   },
    firstButton: {
-    backgroundColor: '#c1c1c1',
+    backgroundColor: '#ffffff',
     borderTopLeftRadius: 20,
     borderBottomLeftRadius: 20,
   },

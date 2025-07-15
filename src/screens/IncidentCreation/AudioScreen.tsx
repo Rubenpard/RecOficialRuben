@@ -11,12 +11,14 @@ import AudioRecorderPlayer, { AudioEncoderAndroidType, AudioSourceAndroidType, O
 import type { Asset } from 'react-native-image-picker';
 import { useIncidentCreation } from '../../context/IncidentCreationContext';
 import uuid from 'react-native-uuid'; // Necesario para nombre de archivo en stopRecord
-import ExpresIcon from '../../assets/icons/expres.svg'; // Ajusta ruta
+
+
 import HomeIcon from '../../assets/icons/home.svg';     // Ajusta ruta
 import AudioIcon from '../../assets/icons/audio.svg';
 import MPerfilIcon from '../../assets/icons/usuarioSvg.svg';
 import SiguienteIcon from '../../assets/icons/siguiente.svg';
 import VolverIcon from '../../assets/icons/volver.svg';
+import AudioBlancoIcon from '../../assets/icons/audioBlanco.svg';
 
   const gridPaddingVertical = 15;
   const gridPaddingHorizontal = 15;
@@ -193,7 +195,7 @@ const AudioScreen: React.FC<AudioScreenProps> = ({ navigation }) => {
             onPress={isRecording ? onStopRecord : onStartRecord}
             activeOpacity={0.7}
           >
-            <Ionicons name={isRecording ? "stop-circle-outline" : "mic-outline"} size={30} color="#FFFFFF" style={styles.buttonIcon}/>
+            <AudioBlancoIcon width={40} height={40} />
             <Text style={styles.recordButtonText}>{isRecording ? 'Detener Grabación' : 'Grabar audio'}</Text>
             <Text style={styles.timerText}>{displayTime}</Text>
           </TouchableOpacity>
@@ -309,6 +311,7 @@ const styles = StyleSheet.create({
       marginBottom: 30,
       paddingHorizontal: 15, 
       paddingRight: 50, 
+
     }, // Más margen
     recordButton: { 
       flexDirection: 'row', 
@@ -325,7 +328,9 @@ const styles = StyleSheet.create({
       elevation: 5, 
       borderTopLeftRadius: 20,
       borderBottomLeftRadius: 20,
-      marginRight: -20,},
+      marginRight: -20,
+      gap: 10,
+    },
     recordingButton: { backgroundColor: '#DC3545', },
     buttonIcon: { marginRight: 10, },
     recordButtonText: { 

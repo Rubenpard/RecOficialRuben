@@ -18,6 +18,7 @@ import HomeIcon from '../../assets/icons/home.svg';
 import CameraIcon from '../../assets/icons/camera.svg';
 import PicturesIcon from '../../assets/icons/pictures.svg';
 import SiguienteIcon from '../../assets/icons/siguiente.svg';
+import ExpresIconHeader from '../../assets/icons/expressheader.svg'
 // --- ---
 
 const gridPaddingVertical = 15;
@@ -36,7 +37,7 @@ interface TopHeaderButtonData {
 
 // --- Datos ---
 const topHeaderButtons: TopHeaderButtonData[] = [
-    { id: 'Profile', title: 'Mi Perfil',  iconComponent: MPerfilIcon },
+    { id: 'Profile', title: 'Abiertas',  iconComponent: ExpresIconHeader },
     { id: 'Calendar', title: 'Inicio',  iconComponent: HomeIcon },
 
 ];
