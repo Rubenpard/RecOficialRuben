@@ -255,6 +255,9 @@
       safeArea: {
       flex: 1,
       backgroundColor: '#3f4c53', // Fondo oscuro general
+      marginTop: 40,
+      marginBottom: 46,
+      paddingBottom: 30,
     },
     centered: {
       flex: 1, // Ocupa todo el espacio disponible si la lista está vacía
@@ -286,6 +289,7 @@
       borderRadius: 20, // Bordes redondeados
       marginVertical: 16, // Espacio antes de la cuadrícula (valor fijo)
       marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+      marginTop: 20,
     },
     topHeaderButton: {
       flex: 1,

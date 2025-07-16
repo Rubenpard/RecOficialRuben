@@ -217,6 +217,7 @@ const styles = StyleSheet.create({
   safeArea: { 
     flex: 1,
     backgroundColor: '#3f4c53',
+    marginTop: 40,
    }, // Fondo claro general
      // --- Header Superior ---
   topHeaderContainer: {
@@ -228,6 +229,7 @@ const styles = StyleSheet.create({
     borderRadius: 20, // Bordes redondeados
     marginVertical: 16, // Espacio antes de la cuadrícula (valor fijo)
     marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+    marginTop: 20,
   },
   topHeaderButton: {
     flex: 1,
@@ -267,7 +269,18 @@ const styles = StyleSheet.create({
   // --- Contenido ---
   keyboardAvoidingView: { flex: 1, },
   scrollContainer: { flexGrow: 1, padding: 15, paddingTop: 10, },
-  contentCard: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 15, padding: 20, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, },
+  contentCard: { 
+    flex: 1, 
+    backgroundColor: '#FFFFFF', 
+    borderRadius: 5, 
+    padding: 20, 
+    elevation: 4, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.15, 
+    shadowRadius: 4, 
+    marginBottom: 50,
+  },
   infoSection: { 
     alignItems: 'center', 
     marginBottom: 25, 
@@ -280,7 +293,7 @@ const styles = StyleSheet.create({
     color: '#555',  
     lineHeight: 21, 
     flex: 1,
-    paddingHorizontal: 15, 
+    paddingHorizontal: 25, 
     paddingRight: 20,
   },
   inputContainer: { marginBottom: 20, borderWidth: 1, borderColor: '#D0D0D0', borderRadius: 10, backgroundColor: '#FFFFFF', },

@@ -65,13 +65,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   // --- Renderizado ---
   const headerIconSize = 60; // Tamaño iconos header superior
-  const gridIconSize = 90;  // Tamaño iconos cuadrícula
+  const gridIconSize = 120;  // Tamaño iconos cuadrícula
 
   return (
     // SafeAreaView para evitar solapamiento con notch/barra de estado en iOS
     <SafeAreaView style={styles.safeArea}>
         {/* StatusBar para controlar color (opcional si ya lo haces en App.tsx) */}
-        <StatusBar barStyle="dark-content" backgroundColor="#6C757D" />
+        <StatusBar barStyle="dark-content" backgroundColor="black" />
         {/* Contenedor Principal con Flexbox */}
         <View style={styles.mainContainer}>
 
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#3f4c53', // Fondo oscuro general
-    
+    marginTop: 40,
   },
   mainContainer: {
     flex: 1, // Ocupa todo el espacio de SafeAreaView
@@ -171,6 +171,7 @@ const styles = StyleSheet.create({
     borderRadius: 20, // Bordes redondeados
     marginVertical: gridPaddingVertical, // Espacio antes de la cuadrícula
     marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+    marginTop: 20,
   },
   topHeaderButton: {
     flex: 1,
@@ -203,10 +204,10 @@ const styles = StyleSheet.create({
       flex: 1, // Ocupa el espacio restante
       flexDirection: 'row',
       flexWrap: 'wrap',
-      justifyContent: 'center', // Centra los items si no llenan el espacio
       alignContent: 'center', // Centra las filas verticalmente
       paddingHorizontal: gridGap / 2, // Padding lateral para la cuadrícula
       // paddingVertical: gridPaddingVertical, // Padding vertical ya aplicado arriba/abajo
+      marginTop: -70,
     },
   gridItem: {
     width: gridItemWidth,
@@ -214,25 +215,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20, // Bordes bien redondeados
     margin: gridGap / 2, // Espacio alrededor de cada item
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    padding: 10,
     // Sombra
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2, },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    paddingVertical: 40,
+    paddingTop: 30,
   },
 
   iconContainer: {
-  marginTop: 10,
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginTop: 50,
 },
 
 textContainer: {
   flex: 1,
-  justifyContent: 'flex-start', // Para alinear el texto hacia el fondo si hay espacio
-  marginTop: -23,
+  justifyContent: 'center', // Para alinear el texto hacia el fondo si hay espacio
+   alignItems: 'center',
 },
   gridItemText: {
     fontSize: 20, // Texto más grande en cuadrícula

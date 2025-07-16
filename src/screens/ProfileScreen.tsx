@@ -63,13 +63,30 @@ const renderProfileField = ( label: string, value: string | undefined | null, is
    ========================================================================== */
 
 // --- Pestaña Usuario ---
-interface UserTabSceneProps { userProfile: User | null; isLoading: boolean; }
-const UserTabScene: React.FC<UserTabSceneProps> = ({ userProfile, isLoading }) => {
+interface UserTabSceneProps { 
+  userProfile: User | null; 
+  isLoading: boolean; 
+    isSaving: boolean; // ahora viene desde props
+  onUpdateProfile: () => Promise<void>; // función pasada desde padre
+}
+const UserTabScene: React.FC<UserTabSceneProps> = ({ userProfile, isLoading, isSaving, onUpdateProfile }) => {
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
 
-   const handleUpdateProfile = async () => { /* ... (lógica de guardar simulada o con API) ... */ };
+   const handleUpdateProfile = async () => { 
+    if (!userProfile) return;
+    setIsSaving(true);
+    try {
+      // Aquí llamas tu API para guardar perfil
+      // await updateUserProfileApi(userProfile);
+      Alert.alert('Perfil guardado');
+      await loadProfileData(false); // recarga perfil si quieres
+    } catch (error) {
+      Alert.alert('Error guardando perfil', (error as Error).message);
+    } finally {
+      setIsSaving(false);
+    }
+    };
 
    if (isLoading && ! userProfile) { return <ActivityIndicator style={styles.loader} size="large" color="#0033A0"/>; }
    if (!userProfile) { return <Text style={styles.errorTextScene}>Datos de usuario no disponibles.</Text>; }
@@ -87,7 +104,7 @@ const UserTabScene: React.FC<UserTabSceneProps> = ({ userProfile, isLoading }) =
        {renderProfileField('Teléfono Personal', userProfile.telefono)}
        {renderProfileField('Domicilio Personal', userProfile.domicilio)}
        {/* ... otros campos personales ... */}
-       <TouchableOpacity style={[styles.actionButton, styles.saveButton, isSaving && styles.actionButtonDisabled]} onPress={handleUpdateProfile} disabled={isSaving} activeOpacity={0.7}>{/* ... */}</TouchableOpacity>
+
        <View style={{ height: 30 }} />
      </ScrollView>);
  };
@@ -116,6 +133,7 @@ const UserTabScene: React.FC<UserTabSceneProps> = ({ userProfile, isLoading }) =
    Componente Principal ProfileScreen
    ========================================================================== */
    const ProfileScreen: React.FC = () => {
+     const [isSaving, setIsSaving] = useState(false);
     const { userId, logout } = useAuth(); // Solo necesitamos userId y logout
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
     // --- Estado local para el perfil completo y carga/error ---
@@ -149,6 +167,21 @@ const UserTabScene: React.FC<UserTabSceneProps> = ({ userProfile, isLoading }) =
       }
     }, [userId]);
 
+     const handleUpdateProfile = useCallback(async () => {
+    if (!userProfile) return;
+    setIsSaving(true);
+    try {
+      // Aquí iría tu llamada a la API para actualizar el perfil, por ejemplo:
+      // await updateUserProfileApi(userProfile);
+      Alert.alert('Perfil guardado');
+      await loadProfileData(false); // recarga perfil
+    } catch (error) {
+      Alert.alert('Error guardando perfil', (error as Error).message);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [userProfile, loadProfileData]);
+
  // Carga detalles cuando la pantalla se enfoca
  useFocusEffect( useCallback(() => { if (userId) { loadProfileData(!userProfile); } else { setUserProfile(null); setError(null); } }, [userId, loadProfileData, userProfile]) );
   // Manejador de Logout
@@ -172,13 +205,13 @@ const UserTabScene: React.FC<UserTabSceneProps> = ({ userProfile, isLoading }) =
     };
 
    // Mapeo de Escenas (Pasa los detalles cargados)
-   const memoizedRenderScene = useCallback(
+  const memoizedRenderScene = useCallback(
     SceneMap({
-        user: () => <UserTabScene userProfile={userProfile} isLoading={isLoading} />,
-        company: () => <CompanyTabScene userProfile={userProfile} isLoading={isLoading} />,
-    }), [userProfile, isLoading] // Dependencias simplificadas
-);
-
+      user: () => <UserTabScene userProfile={userProfile} isLoading={isLoading} isSaving={isSaving} onUpdateProfile={handleUpdateProfile} />,
+      company: () => <CompanyTabScene userProfile={userProfile} isLoading={isLoading} />,
+    }),
+    [userProfile, isLoading, isSaving, handleUpdateProfile]
+  );
   // Renderizado Principal
   // --- Renderizado Principal ---
   if (error && !userProfile) { /* ... (Render error como antes) ... */ }
@@ -249,15 +282,15 @@ const UserTabScene: React.FC<UserTabSceneProps> = ({ userProfile, isLoading }) =
          </TouchableOpacity>
        </View>
        <View style={styles.butoonContainer} >
-                  <View style={styles.buttonSave}>
-                    <MasIcon width={40} height={40} style={{ marginRight: 4 }} />
-                    <Text style= {styles.butotonText}>Cancelar</Text>
-                    </View>
-
-         <View style={styles.buttonSave}>
-          <Text style= {styles.butotonText}>Guardar</Text>
-          <MasIcon width={40} height={40} style={{ marginRight: 4 }} />
-          </View>
+          <TouchableOpacity style={styles.buttonSave}>
+            <MasIcon width={40} height={40} style={{ marginRight: 4 }} />
+            <Text style= {styles.butotonText}>Cancelar</Text>
+          </TouchableOpacity>
+         <TouchableOpacity style={styles.buttonSave}
+          onPress={handleUpdateProfile} disabled={isSaving} activeOpacity={0.7}>
+            <Text style= {styles.butotonText}>Guardar</Text>
+            <MasIcon width={40} height={40} style={{ marginRight: 4 }} />
+          </TouchableOpacity>
        </View>
      </View>
 </View>
@@ -271,6 +304,7 @@ const styles = StyleSheet.create({
     safeArea: {
     flex: 1,
     backgroundColor: '#3f4c53', // Fondo oscuro general
+    marginTop: 40,
   },
   loader: {
     flex: 1,
@@ -283,10 +317,11 @@ const styles = StyleSheet.create({
       margin: 20,
       backgroundColor: '#FFFFFF',
       borderRadius: 20,
+      marginBottom: 70,
     },
     tabView: {
       flex: 1,
-      color: 'red', // Color de texto general
+      overflow: 'hidden',
     },
 
     // --- Header Superior ---
@@ -299,6 +334,7 @@ const styles = StyleSheet.create({
     borderRadius: 20, // Bordes redondeados
     marginVertical: 16, // Espacio antes de la cuadrícula (valor fijo)
     marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+    marginTop: 20,
   },
   topHeaderButton: {
     flex: 1,
@@ -419,23 +455,24 @@ const styles = StyleSheet.create({
       backgroundColor: '#A0A0A0', 
       elevation: 0, 
     },
-    saveButton: { 
-      backgroundColor: '#28a745', 
-      marginTop: 25, 
-    },
     logoutContainer: { 
       width: '100%',
-      height: 70,
-      paddingBottom: Platform.OS === 'ios' ? 30 : 15,  
+      height: 50,
+      paddingBottom: Platform.OS === 'ios' ? 30 : 15,
     },
-    logoutButton: { backgroundColor: '#2c4391', marginTop: 0, },
+
+    logoutButton: { 
+      backgroundColor: '#2c4391',
+      marginTop: -30,
+      top: 0,
+      },
     logoutIcon: { marginLeft: 10, },
     
      butoonContainer:{
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingHorizontal: 20,
-      paddingVertical: 20,
+      paddingVertical: 30,
      },
 
      buttonSave: {

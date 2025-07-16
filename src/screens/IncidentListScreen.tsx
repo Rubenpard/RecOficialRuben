@@ -235,8 +235,31 @@ const topHeaderButtons: TopHeaderButtonData[] = [
     };
     const renderFilterModalContent = () => { if (!currentFilterEditing) return null; let options: string[] = []; if (currentFilterEditing === 'modelo') { options = getModelosForMarca(filters.marca ?? null); } else { options = filterOptionsData[currentFilterEditing] || []; } const optionsWithClear = ["(Limpiar Filtro)", ...options]; return ( <TouchableOpacity activeOpacity={1} style={styles.modalContainer}> 
     <Text style={styles.modalTitle}>Seleccionar {currentFilterEditing}</Text> 
-    <FlatList data={optionsWithClear} keyExtractor={(item) => item} renderItem={({ item }) => ( <TouchableOpacity style={styles.modalOption} onPress={() => handleFilterSelect(item === "(Limpiar Filtro)" ? null : item)} disabled={item.startsWith('(') && item !== "(Limpiar Filtro)"}> <Text style={[styles.modalOptionText, (item.startsWith('(') && item !== "(Limpiar Filtro)") && styles.modalOptionDisabled]}>{item}</Text> </TouchableOpacity> )} ItemSeparatorComponent={() => <View style={styles.separator} />} /> <TouchableOpacity style={styles.modalCloseButton} onPress={() => setIsFilterModalVisible(false)}><Text style={styles.modalCloseButtonText}>Cancelar</Text></TouchableOpacity> </TouchableOpacity> ); };
-    const renderFilterModal = () => { if (!showFilters) return null; return ( <Modal transparent={true} visible={isFilterModalVisible} animationType="fade" onRequestClose={() => setIsFilterModalVisible(false)}> <Pressable style={styles.modalOverlay} onPress={() => setIsFilterModalVisible(false)}> {renderFilterModalContent()} </Pressable> </Modal> ); };
+    <FlatList data={optionsWithClear} keyExtractor={(item) => item} renderItem={({ item }) => ( 
+      <TouchableOpacity style={styles.modalOption} 
+      onPress={() => handleFilterSelect(item === "(Limpiar Filtro)" ? null : item)} 
+      disabled={item.startsWith('(') && item !== "(Limpiar Filtro)"}> 
+      <Text 
+      style={[styles.modalOptionText, (item.startsWith('(') && item !== "(Limpiar Filtro)") && styles.modalOptionDisabled]}>{item}
+      </Text> 
+      </TouchableOpacity> )} ItemSeparatorComponent={() => 
+      <View style={styles.separator} />} /> 
+      <TouchableOpacity style={styles.modalCloseButton} 
+      onPress={() => setIsFilterModalVisible(false)}>
+        <Text style={styles.modalCloseButtonText}>Cancelar</Text>
+        </TouchableOpacity> </TouchableOpacity> ); };
+    const renderFilterModal = () => { if (!showFilters) return null; 
+      return ( 
+        <Modal 
+        transparent={true} 
+        visible={isFilterModalVisible} 
+        animationType="fade" 
+        onRequestClose={() => setIsFilterModalVisible(false)}> 
+        <Pressable style={styles.modalOverlay} 
+        onPress={() => setIsFilterModalVisible(false)}> {renderFilterModalContent()} 
+        </Pressable> 
+        </Modal> ); 
+        };
     const renderFooter = () => { if (!isLoadingMore || !canLoadMore) return null; return ( <View style={styles.footerLoader}><ActivityIndicator size="small" color="#0033A0" /></View> ); };
 
     // --- Renderizado Principal ---
@@ -282,8 +305,19 @@ const topHeaderButtons: TopHeaderButtonData[] = [
                    })}
                  </View>
         {renderFilterBar()}
-        {isLoading && !isRefreshing && incidents.length === 0 && !error && ( <View style={styles.centered}><ActivityIndicator size="large" color="#0033A0" /><Text style={styles.loadingText}>Cargando...</Text></View> )}
-        {error && incidents.length === 0 && ( <View style={styles.centered}><Text style={styles.errorText}>{error}</Text><TouchableOpacity onPress={() => loadIncidents(false, false)} style={styles.retryButton}><Text style={styles.retryButtonText}>Reintentar</Text></TouchableOpacity></View> )}
+        {isLoading && !isRefreshing && incidents.length === 0 && !error && ( 
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color="#0033A0" />
+            <Text style={styles.loadingText}>Cargando...</Text>
+            </View> 
+          )}
+        {error && incidents.length === 0 && ( 
+          <View style={styles.centered}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity onPress={() => loadIncidents(false, false)} style={styles.retryButton}>
+              <Text style={styles.retryButtonText}>Reintentar</Text>
+              </TouchableOpacity></View> 
+            )}
         {(!error || incidents.length > 0) && (
             <FlatList data={incidents} 
             renderItem={renderIncidentItem} 
@@ -309,6 +343,8 @@ const styles = StyleSheet.create({
     safeArea: {
       flex: 1,
       backgroundColor: '#3f4c53',
+      marginTop: 40,
+      paddingBottom: 30,
     },
     customHeaderContainer: {
       flexDirection: 'row',
@@ -322,6 +358,7 @@ const styles = StyleSheet.create({
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.2,
       shadowRadius: 2,
+      marginTop: 20,
      },
     
      // --- Header Superior ---
@@ -414,6 +451,7 @@ const styles = StyleSheet.create({
       backgroundColor: '#ffffff', 
       margin: 20,
       borderRadius: 20, 
+      paddingBottom: 60,
     },
     card: { 
       backgroundColor: '#ededed', 
@@ -448,24 +486,41 @@ const styles = StyleSheet.create({
     cardContent: { 
       flex: 1, 
       marginRight: 10,
-      marginTop: 20,
+      marginTop: 50,
       paddingHorizontal: 20,
     },
-    cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#212529', marginBottom: 3, },
+    cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#212529', },
     cardSubtitle: { fontSize: 14, color: '#495057', },
     cardIconTouchable:{
       padding: 5,
     },
-        cardIconText:{
+      cardIconText:{
       padding: 20,
        fontSize: 30,
        fontWeight: 800,
        color: '#0132ab',
+       
     },
     footerLoader: { paddingVertical: 20, alignItems: 'center' },
     // --- Estilos Modal (copia de versión anterior) ---
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', alignItems: 'center', },
-    modalContainer: { backgroundColor: '#FFFFFF', borderRadius: 10, paddingHorizontal: 0, paddingTop: 20, paddingBottom: 10, width: '90%', maxWidth: 400, maxHeight: '80%', elevation: 5, overflow: 'hidden', },
+    modalOverlay: { 
+      flex: 1, 
+      backgroundColor: 'rgba(0, 0, 0, 0.6)', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+    },
+    modalContainer: { 
+      backgroundColor: '#FFFFFF', 
+      borderRadius: 10, 
+      paddingHorizontal: 0, 
+      paddingTop: 20, 
+      paddingBottom: 10, 
+      width: '90%', 
+      maxWidth: 400, 
+      maxHeight: '80%', 
+      elevation: 5, 
+      overflow: 'hidden', 
+    },
     modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center', color: '#333', paddingHorizontal: 20, },
     modalOption: { paddingVertical: 14, paddingHorizontal: 20, },
     modalOptionText: { fontSize: 16, color: '#444', },

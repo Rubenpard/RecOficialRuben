@@ -110,9 +110,10 @@ const topHeaderButtons: TopHeaderButtonData[] = [
          </TouchableOpacity>
     </View>
   );
-
+  
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#F0F2F5"/>
          {/* Header Superior (3 Botones) */}
                      <View style={styles.topHeaderContainer}>
                        {topHeaderButtons.map((button, index) => {
@@ -153,7 +154,6 @@ const topHeaderButtons: TopHeaderButtonData[] = [
                          );
                        })}
                      </View>
-      <StatusBar barStyle="light-content" backgroundColor="#F0F2F5"/>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Tarjeta Blanca de Contenido */}
         <View style={styles.contentCard}>
@@ -218,6 +218,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#3f4c53',
+    marginTop: 40,
    },
   customHeaderContainer: { flexDirection: 'row', backgroundColor: '#FFFFFF', paddingHorizontal: 5, paddingVertical: 8, marginHorizontal: 10, marginTop: Platform.OS === 'android' ? 10 : 0, marginBottom: 5, borderRadius: 25, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, },
   
@@ -231,6 +232,7 @@ const styles = StyleSheet.create({
     borderRadius: 20, // Bordes redondeados
     marginVertical: gridPaddingVertical, // Espacio antes de la cuadrícula
     marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+    marginTop: 20,
   },
   topHeaderButton: {
     flex: 1,
@@ -267,7 +269,9 @@ const styles = StyleSheet.create({
   customHeaderButtonActive: { backgroundColor: '#FFFFFF', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 1.5, },
   customHeaderText: { marginLeft: 8, fontSize: 14, fontWeight: 'bold', color: '#6C757D', },
   customHeaderTextActive: { color: '#0033A0', },
-  scrollContainer: { flexGrow: 1, padding: 15, paddingTop: 10, justifyContent: 'center' }, // Centrar contenido si es poco
+  scrollContainer: { 
+    flexGrow: 1, padding: 15,
+     paddingTop: 10,  }, // Centrar contenido si es poco
   contentCard: {
     // flex: 1, // No necesita flex: 1 si el scrollContainer ya lo centra
     backgroundColor: '#FFFFFF',
@@ -289,7 +293,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#A0B5D3', // Borde azul grisáceo
     borderRadius: 25,
-    justifyContent: 'center',
+
     alignItems: 'center',
     marginBottom: 30,
     padding: 20,

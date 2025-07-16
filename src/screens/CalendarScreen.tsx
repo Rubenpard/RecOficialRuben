@@ -170,13 +170,13 @@ const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) => {
   // --- Renderizado Principal ---
   return (
     <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF"/>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" translucent={false}/>
         {/* {renderCustomHeader()} */}  
         
-    {/* Header Superior (3 Botones) */}
- <View style={styles.topHeaderContainer}>
-     {topHeaderButtons.map((button, index) => {
-       const Icon = button.iconComponent;
+          {/* Header Superior (3 Botones) */}
+          <View style={styles.topHeaderContainer}>
+          {topHeaderButtons.map((button, index) => {
+            const Icon = button.iconComponent;
 
        // Determinar estilos por posición
        const isFirst = index === 0;
@@ -228,7 +228,8 @@ const CalendarScreen: React.FC<CalendarScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
         safeArea: {
     flex: 1,
-    backgroundColor: '#3f4c53', // Fondo oscuro general
+    backgroundColor: '#3f4c53', 
+     marginTop: 40,
   },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
     loadingText: { marginTop: 10, color: '#555', fontSize: 16, },
@@ -246,6 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: 20, // Bordes redondeados
     marginVertical: 16, // Espacio antes de la cuadrícula (valor fijo)
     marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+     marginTop: 20,
   },
   topHeaderButton: {
     flex: 1,
@@ -276,10 +278,12 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
   },
     // --- Contenido ---
-    scrollContainer: { flex: 1, }, // Para que el ScrollView ocupe espacio
+    scrollContainer: { 
+      flex: 1,
+     }, // Para que el ScrollView ocupe espacio
     scrollContent: { 
       padding: 15, 
-      paddingBottom: 30, 
+      paddingBottom: 30,
     },
     sectionContainer: { 
       backgroundColor: '#ececec', 
@@ -291,6 +295,9 @@ const styles = StyleSheet.create({
       shadowOpacity: 0.18, 
       shadowRadius: 1.00, 
       elevation: 1, 
+    },
+    sectionContainerBottom:{
+      marginBottom: 70,
     },
     sectionHeader: { 
       backgroundColor: '#FFFFFF',
@@ -322,6 +329,7 @@ const styles = StyleSheet.create({
       paddingBottom: 5, 
       marginHorizontal: 20,
       marginBottom: 20,
+      
     }, // Reducido padding top
     eventItem: { 
       paddingVertical: 12, 

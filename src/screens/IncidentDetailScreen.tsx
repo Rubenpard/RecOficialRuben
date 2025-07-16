@@ -135,7 +135,7 @@ const { showVolver, showResponder, showCerrar, showReabrir } =
                 isLast && styles.lastButton,
                 !isFirst && !isLast && styles.middleButton
               ]}
-              onPress={() => navigation.navigate(button.id)}
+              onPress={() => navigation.navigate('Home')}
               activeOpacity={0.7}
             >
               <Icon width={headerIconSize} height={headerIconSize} fill={isFirst ? '#2c4391' : '#ffffff'} />
@@ -253,6 +253,7 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: '#3f4c53',
+        marginTop: 40,
     },
      // --- Header Superior ---
   topHeaderContainer: {
@@ -264,6 +265,7 @@ const styles = StyleSheet.create({
     borderRadius: 20, // Bordes redondeados
     marginVertical: 16, // Espacio antes de la cuadrícula (valor fijo)
     marginHorizontal: gridPaddingHorizontal, // Espacio lateral
+    marginTop: 20,
   },
   topHeaderButton: {
     flex: 1,
