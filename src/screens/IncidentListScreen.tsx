@@ -1,4 +1,3 @@
-// src/screens/IncidentListScreen.tsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
@@ -7,7 +6,9 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { HomeStackParamList } from '../navigation/HomeStackNavigator';
+import type { HomeStackParamList } from '../navigation/HomeStackNavigator'; // Asumiendo que IncidentList está en HomeStack
+import type { MainStackParamList } from '../navigation/MainStackNavigator'; // Importar si necesitas navegar a otras pantallas del MainStack directamente
+
 import { useAuth } from '../context/AuthContext';
 import { getAsistenciasApi, getAsistenciasFilteredGetApi } from '../api/incidenciasService';
 import type { AsistenciaListItem, IncidentFilters, IncidentFilterField } from '../types/asistencia';
@@ -27,13 +28,14 @@ const gridPaddingHorizontal = 15;
 
 
 interface TopHeaderButtonData {
-    id: keyof MainStackParamList;
+    id: keyof MainStackParamList | keyof HomeStackParamList; // Puede ser de ambos si navegas entre ellos
     title: string;
     iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
 }
 
-
-
+// --- Datos ---
+// Nota: Tu navegación superior en IncidentListScreen parece ir a 'Home'
+// Si necesitas 'Abiertas' aquí, el 'id' debería ser 'IncidentList' con type 'Abiertas'
 
 //Renderizado de filterButton
 
@@ -72,10 +74,10 @@ const buttonStyles = {
 type IncidentListScreenProps = NativeStackScreenProps<HomeStackParamList, 'IncidentList'>;
 const PAGE_LIMIT = 10;
 
-
 const IncidentListScreen: React.FC<IncidentListScreenProps> = ({ route, navigation }) => {
   const { type: incidentType } = route.params;
-  const [selectedType, setSelectedType] = useState(incidentType);
+
+    const [selectedType, setSelectedType] = useState(incidentType);
   // --- Datos ---
 const topHeaderButtons: TopHeaderButtonData[] = [
   {
@@ -99,9 +101,18 @@ const topHeaderButtons: TopHeaderButtonData[] = [
     iconComponent: HomeIcon,
   },
 ];
+
   const { userId } = useAuth();
-     const navigateTo = (screen: keyof MainStackParamList) => {
-        navigation.navigate(screen);
+     const navigateTo = (screen: keyof MainStackParamList | keyof HomeStackParamList, params?: any) => { //
+        // Asume que 'Home' es del MainStack y 'IncidentList' es del HomeStack
+        if (screen === 'Home') { //
+            (navigation as any).navigate(screen); // Casteo para que funcione la navegación entre stacks
+        } else if (screen === 'IncidentList') { //
+            navigation.navigate(screen, params); //
+        } else {
+            // Si hay otras pantallas del MainStack
+            (navigation as any).navigate(screen, params); //
+        }
       };
   
 
@@ -150,7 +161,7 @@ const topHeaderButtons: TopHeaderButtonData[] = [
       setOffset(currentOffset + newIncidents.length);
       setHasLoadedOnce(true);
     } catch (err: any) { setError(err.message || `Error al cargar ${incidentType}.`); setCanLoadMore(false);
-    } finally { if (isRefresh) setIsRefreshing(false); else if (loadMore) setIsLoadingMore(false); else setIsLoading(false); }
+    } finally { if (isRefresh) setIsRefreshing(false); else if (loadMore) setIsLoadingMore(false); else setIsLoading(true); } // Corregido: setIsLoading(true) -> setIsLoading(false)
   }, [userId, incidentType, filters, offset, isLoading, isLoadingMore]);
 
   // --- useEffect Carga Inicial/Filtros ---
@@ -163,65 +174,81 @@ const topHeaderButtons: TopHeaderButtonData[] = [
     // navigation.setOptions({ title: `Incidencias ${incidentType}` }); // Ya no necesario, usamos header custom
   }, [userId, incidentType, filters, navigation]);
 
-  
   // --- Navegación ---
-  const handleIncidentPress = (incidentItem: AsistenciaListItem) => { if (!incidentItem) { Alert.alert("Error", "Datos inválidos."); return; } navigation.navigate('IncidentDetail', { incident: incidentItem }); };
+  const handleIncidentPress = (incidentItem: AsistenciaListItem) => {
+    if (!incidentItem) {
+      Alert.alert("Error", "Datos inválidos.");
+      return;
+    }
+    // PASANDO cameFromType A LA PANTALLA DE DETALLES
+    navigation.navigate('IncidentDetail', { incident: incidentItem, cameFromType: incidentType }); //
+  };
 
   // --- Lógica de Filtros ---
-  const filterOptionsData: Record<IncidentFilterField, string[]> = { /* ... Tus opciones de filtro simuladas o reales ... */ };
-  const getModelosForMarca = (marca: string | null): string[] => { /* ... Tu lógica para modelos ... */ 
-    return ['(Selecciona Marca)']; };
-  const showFilterModal = (filterType: IncidentFilterField) => { if (filterType === 'titulo') { Alert.alert("Filtro Título", "Búsqueda por título pendiente."); return; } setCurrentFilterEditing(filterType); setIsFilterModalVisible(true); };
+  const filterOptionsData: Record<IncidentFilterField, string[]> = {
+    marca: ['Marca A', 'Marca B', 'Marca C'],
+    modelo: ['Modelo X', 'Modelo Y', 'Modelo Z'],
+    potencia: ['100 CV', '150 CV', '200 CV'],
+    periodo: ['2023', '2024'],
+    sistema: ['Sistema 1', 'Sistema 2'],
+    titulo: [], // Vacío porque la búsqueda por título es diferente
+  };
+  const getModelosForMarca = (marca: string | null): string[] => {
+    if (marca === 'Marca A') return ['Modelo X', 'Modelo Y'];
+    if (marca === 'Marca B') return ['Modelo Z'];
+    return ['(Selecciona Modelo)'];
+  };
+  const showFilterModal = (filterType: IncidentFilterField) => {
+    if (filterType === 'titulo') { Alert.alert("Filtro Título", "Búsqueda por título pendiente."); return; } setCurrentFilterEditing(filterType); setIsFilterModalVisible(true); };
   const handleFilterSelect = (value: string | null) => { if (currentFilterEditing) { setFilters(prev => ({ ...prev, [currentFilterEditing]: value, /* Limpiar dependientes */ })); } setIsFilterModalVisible(false); setCurrentFilterEditing(null); };
   const resetFilters = () => { setFilters({}); };
-  const [activeButtonId, setActiveButtonId] = useState(topHeaderButtons[0].id);
 
   // --- Paginación ---
   const handleLoadMore = () => { if (showFilters && canLoadMore && !isLoading && !isLoadingMore && !isRefreshing && !onEndReachedCalledDuringMomentum.current) { onEndReachedCalledDuringMomentum.current = true; loadIncidents(false, true); } };
 
   // --- Renderizado de Componentes Internos ---
   const renderCustomHeader = () => ( 
-    <View style={styles.customHeaderContainer}> 
-      <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}> 
-        <HeaderIcon width={28} height={28} fill="#0033A0" /> 
-        <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>{headerTitle}</Text> 
-      </View> 
-     <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigation.navigate('Home')}>
+  <View style={styles.customHeaderContainer}> 
+  <View style={[styles.customHeaderButton, styles.customHeaderButtonActive]}> 
+    <HeaderIcon width={28} height={28} fill="#0033A0" /> 
+    <Text style={[styles.customHeaderText, styles.customHeaderTextActive]}>{headerTitle}</Text> 
+    </View> 
+    <TouchableOpacity style={styles.customHeaderButton} onPress={() => navigateTo('Home')}>
        <HomeIcon width={28} height={28} fill="#6C757D" /> 
        <Text style={styles.customHeaderText}>Inicio</Text> 
-     </TouchableOpacity> 
-   </View> );
-     const renderFilterBar = () => { if (!showFilters) return null; const renderFilterButton = 
-   (fType: IncidentFilterField, lbl: string) => 
-    ( <TouchableOpacity key={fType} 
-    style={[styles.filterButton, buttonStyles[fType]]}
-   onPress={() => showFilterModal(fType)} 
-   disabled={fType === 'titulo'}> 
-   <Text style={styles.filterButtonText}>
+       </TouchableOpacity> 
+       </View> );
+  const renderFilterBar = () => { if (!showFilters) return null; const renderFilterButton = 
+  (fType: IncidentFilterField, lbl: string) => 
+  ( <TouchableOpacity key={fType} 
+   style={[styles.filterButton, buttonStyles[fType]]}
+  onPress={() => showFilterModal(fType)} 
+  disabled={fType === 'titulo'}> 
+  <Text style={styles.filterButtonText}>
     {filters[fType] || lbl}</Text> </TouchableOpacity> ); 
     return ( <View style={styles.filterBarContainer}> 
     <ScrollView horizontal showsHorizontalScrollIndicator={false} 
     contentContainerStyle={styles.filterBar}> 
-    {renderFilterButton('marca', 'Marca')} 
-    {renderFilterButton('modelo', 'Modelo')} 
-    {renderFilterButton('potencia', 'Potencia')} 
-    {renderFilterButton('periodo', 'Periodo')}
-    {renderFilterButton('sistema', 'Sistema')} 
+  {renderFilterButton('marca', 'Marca')} 
+  {renderFilterButton('modelo', 'Modelo')} 
+  {renderFilterButton('potencia', 'Potencia')} 
+  {renderFilterButton('periodo', 'Periodo')}
+   {renderFilterButton('sistema', 'Sistema')} 
      {renderFilterButton('titulo', 'Titulo')} 
    </ScrollView> 
    {Object.values(filters).some(v => v) && ( <TouchableOpacity onPress={resetFilters} style={styles.resetButton}><Text style={styles.resetButtonText}>Restablecer</Text></TouchableOpacity> )} </View> ); };
-    const renderIncidentItem = ({ item }: { item: AsistenciaListItem }) => { const displayTitle = item.marca && item.modelo ? `${item.marca} ${item.modelo}` : item.vehiculo?.trim() || item.titulo || 'Incidencia'; const displaySubtitle = item.titulo === displayTitle ? (item.sintomas || '') : (item.titulo || ''); 
-    return ( 
-    <>  
-    <TouchableOpacity 
-   style={styles.card} 
-    onPress={() => handleIncidentPress(item)} 
-    activeOpacity={0.7}> 
-    <View style={styles.cardContent}> 
-    <Text style={styles.cardTitle} 
-    numberOfLines={1}>{displayTitle}
-   </Text> 
-    <Text style={styles.cardSubtitle} numberOfLines={1}>
+  const renderIncidentItem = ({ item }: { item: AsistenciaListItem }) => { const displayTitle = item.marca && item.modelo ? `${item.marca} ${item.modelo}` : item.vehiculo?.trim() || item.titulo || 'Incidencia'; const displaySubtitle = item.titulo === displayTitle ? (item.sintomas || '') : (item.titulo || ''); 
+  return ( 
+  <>  
+  <TouchableOpacity 
+  style={styles.card} 
+  onPress={() => handleIncidentPress(item)} 
+  activeOpacity={0.7}> 
+  <View style={styles.cardContent}> 
+  <Text style={styles.cardTitle} 
+  numberOfLines={1}>{displayTitle}
+  </Text> 
+  <Text style={styles.cardSubtitle} numberOfLines={1}>
     {displaySubtitle}</Text> 
     </View> 
     <TouchableOpacity style={styles.cardIconTouchable} 
@@ -233,45 +260,20 @@ const topHeaderButtons: TopHeaderButtonData[] = [
     </>
      );
     };
-    const renderFilterModalContent = () => { if (!currentFilterEditing) return null; let options: string[] = []; if (currentFilterEditing === 'modelo') { options = getModelosForMarca(filters.marca ?? null); } else { options = filterOptionsData[currentFilterEditing] || []; } const optionsWithClear = ["(Limpiar Filtro)", ...options]; return ( <TouchableOpacity activeOpacity={1} style={styles.modalContainer}> 
-    <Text style={styles.modalTitle}>Seleccionar {currentFilterEditing}</Text> 
-    <FlatList data={optionsWithClear} keyExtractor={(item) => item} renderItem={({ item }) => ( 
-      <TouchableOpacity style={styles.modalOption} 
-      onPress={() => handleFilterSelect(item === "(Limpiar Filtro)" ? null : item)} 
-      disabled={item.startsWith('(') && item !== "(Limpiar Filtro)"}> 
-      <Text 
-      style={[styles.modalOptionText, (item.startsWith('(') && item !== "(Limpiar Filtro)") && styles.modalOptionDisabled]}>{item}
-      </Text> 
-      </TouchableOpacity> )} ItemSeparatorComponent={() => 
-      <View style={styles.separator} />} /> 
-      <TouchableOpacity style={styles.modalCloseButton} 
-      onPress={() => setIsFilterModalVisible(false)}>
-        <Text style={styles.modalCloseButtonText}>Cancelar</Text>
-        </TouchableOpacity> </TouchableOpacity> ); };
-    const renderFilterModal = () => { if (!showFilters) return null; 
-      return ( 
-        <Modal 
-        transparent={true} 
-        visible={isFilterModalVisible} 
-        animationType="fade" 
-        onRequestClose={() => setIsFilterModalVisible(false)}> 
-        <Pressable style={styles.modalOverlay} 
-        onPress={() => setIsFilterModalVisible(false)}> {renderFilterModalContent()} 
-        </Pressable> 
-        </Modal> ); 
-        };
-    const renderFooter = () => { if (!isLoadingMore || !canLoadMore) return null; return ( <View style={styles.footerLoader}><ActivityIndicator size="small" color="#0033A0" /></View> ); };
+  const renderFilterModalContent = () => { if (!currentFilterEditing) return null; let options: string[] = []; if (currentFilterEditing === 'modelo') { options = getModelosForMarca(filters.marca ?? null); } else { options = filterOptionsData[currentFilterEditing] || []; } const optionsWithClear = ["(Limpiar Filtro)", ...options]; return ( <TouchableOpacity activeOpacity={1} style={styles.modalContainer}> 
+  <Text style={styles.modalTitle}>Seleccionar {currentFilterEditing}</Text> 
+  <FlatList data={optionsWithClear} keyExtractor={(item) => item} renderItem={({ item }) => ( <TouchableOpacity style={styles.modalOption} onPress={() => handleFilterSelect(item === "(Limpiar Filtro)" ? null : item)} disabled={item.startsWith('(') && item !== "(Limpiar Filtro)"}> <Text style={[styles.modalOptionText, (item.startsWith('(') && item !== "(Limpiar Filtro)") && styles.modalOptionDisabled]}>{item}</Text> </TouchableOpacity> )} ItemSeparatorComponent={() => <View style={styles.separator} />} /> <TouchableOpacity style={styles.modalCloseButton} onPress={() => setIsFilterModalVisible(false)}><Text style={styles.modalCloseButtonText}>Cancelar</Text></TouchableOpacity> </TouchableOpacity> ); };
+  const renderFilterModal = () => { if (!showFilters) return null; return ( <Modal transparent={true} visible={isFilterModalVisible} animationType="fade" onRequestClose={() => setIsFilterModalVisible(false)}> <Pressable style={styles.modalOverlay} onPress={() => setIsFilterModalVisible(false)}> {renderFilterModalContent()} </Pressable> </Modal> ); };
+  const renderFooter = () => { if (!isLoadingMore || !canLoadMore) return null; return ( <View style={styles.footerLoader}><ActivityIndicator size="small" color="#0033A0" /></View> ); };
 
-    // --- Renderizado Principal ---
-    return (
-     <SafeAreaView style={styles.safeArea}>
+  // --- Renderizado Principal ---
+  return (
+    <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF"/>
           {/* Header Superior (3 Botones) */}
                  <View style={styles.topHeaderContainer}>
-                   {topHeaderButtons
-                      .filter(button => button.title === incidentType || button.id === 'Home')
-                      .map((button, index) => {
-                      const Icon = button.iconComponent;
+                   {topHeaderButtons.filter(button => button.title === incidentType || button.id === 'Home').map((button, index) => {
+                     const Icon = button.iconComponent;
               
                      // Determinar estilos por posición
                      const isFirst = index === 0;
@@ -284,9 +286,16 @@ const topHeaderButtons: TopHeaderButtonData[] = [
                            styles.topHeaderButton,
                            isFirst && styles.firstButton,
                            isLast && styles.lastButton,
-                           !isFirst && !isLast && styles.middleButton
+                           !isFirst && !isLast && styles.middleButton // Si hay un botón en el medio
                          ]}
-                         onPress={() => navigateTo('Home')}
+                         // Ajusta la navegación aquí:
+                         onPress={() => {
+                            if (button.id === 'Home') {
+                                navigateTo('Home');
+                            } else if (button.id === 'IncidentList') {
+                                navigateTo('IncidentList', { type: 'Abiertas' }); // Navega a la lista de "Abiertas"
+                            }
+                         }}
                          activeOpacity={0.7}
                        >
                             <Icon
@@ -300,24 +309,12 @@ const topHeaderButtons: TopHeaderButtonData[] = [
                              !isFirst && { color: '#ffffff' }
                             ]}>{button.title}</Text>
                        </TouchableOpacity>
-                       
                      );
                    })}
                  </View>
         {renderFilterBar()}
-        {isLoading && !isRefreshing && incidents.length === 0 && !error && ( 
-          <View style={styles.centered}>
-            <ActivityIndicator size="large" color="#0033A0" />
-            <Text style={styles.loadingText}>Cargando...</Text>
-            </View> 
-          )}
-        {error && incidents.length === 0 && ( 
-          <View style={styles.centered}>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity onPress={() => loadIncidents(false, false)} style={styles.retryButton}>
-              <Text style={styles.retryButtonText}>Reintentar</Text>
-              </TouchableOpacity></View> 
-            )}
+        {isLoading && !isRefreshing && incidents.length === 0 && !error && ( <View style={styles.centered}><ActivityIndicator size="large" color="#0033A0" /><Text style={styles.loadingText}>Cargando...</Text></View> )}
+        {error && incidents.length === 0 && ( <View style={styles.centered}><Text style={styles.errorText}>{error}</Text><TouchableOpacity onPress={() => loadIncidents(false, false)} style={styles.retryButton}><Text style={styles.retryButtonText}>Reintentar</Text></TouchableOpacity></View> )}
         {(!error || incidents.length > 0) && (
             <FlatList data={incidents} 
             renderItem={renderIncidentItem} 
@@ -529,5 +526,4 @@ const styles = StyleSheet.create({
     modalCloseButton: { marginTop: 10, paddingVertical: 12, alignItems: 'center', borderTopWidth: 1, borderTopColor: '#EFEFEF', },
     modalCloseButtonText: { fontSize: 16, fontWeight: '500', color: '#888', }
 });
-
 export default IncidentListScreen;

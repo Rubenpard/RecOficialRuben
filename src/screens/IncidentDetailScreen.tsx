@@ -1,5 +1,5 @@
 // src/screens/IncidentDetailScreen.tsx
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useLayoutEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, Linking, Alert, SafeAreaView, LayoutAnimation,
@@ -7,14 +7,16 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { MainStackParamList } from '../navigation/MainStackNavigator';
+import type { MainStackParamList } from '../navigation/MainStackNavigator'; // Asegúrate de importar MainStackParamList
 import type { AsistenciaListItem, AsistenciaSeguimiento } from '../types/asistencia';
+
 import VolverIcon from '../assets/icons/volver.svg';
 import RefreshIcon from '../assets/icons/refresh.svg';
 import CerrarIcon from '../assets/icons/cerrar.svg';
 
 import AbiertasIcon from '../assets/icons/abiertas.svg';
 import CerradasIcon from '../assets/icons/cerradas.svg';
+import GlobalesIcon from '../assets/icons/globales.svg'; // Importa GlobalesIcon
 import HomeIcon from '../assets/icons/home.svg';
 import CheckIcon from '../assets/icons/check.svg'
 
@@ -23,31 +25,34 @@ const gridPaddingHorizontal = 15;
 const headerIconSize = 60;
 const gridIconSize = 90;
 
+// La interfaz TopHeaderButtonData ya no es estrictamente necesaria para el primer botón,
+// ya que será dinámico. La mantenemos por si el HomeIcon sigue usándola.
 interface TopHeaderButtonData {
   id: keyof MainStackParamList;
   title: string;
   iconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
 }
 
-const topHeaderButtons: TopHeaderButtonData[] = [
-  { id: 'Profile', title: 'Abiertas', iconComponent: AbiertasIcon },
-  { id: 'Calendar', title: 'Inicio', iconComponent: HomeIcon },
-];
+// Este array solo necesita el botón 'Inicio' ahora, el primero será dinámico
+// Se eliminó la definición de topHeaderButtons estática de aquí ya que el primer botón es dinámico.
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+// Actualiza el tipo de las props de la pantalla para recibir 'incident' y 'cameFromType'
 type IncidentDetailScreenProps = NativeStackScreenProps<MainStackParamList, 'IncidentDetail'>;
 
+
+
 const IncidentDetailScreen: React.FC<IncidentDetailScreenProps> = ({ route, navigation }) => {
-  const { incident } = route.params;
+  // Ahora recibimos el objeto 'incident' completo y 'cameFromType'
+  const { incident, cameFromType } = route.params; //
   const [isExpanded, setIsExpanded] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [responseText, setResponseText] = useState('');
-  
-  
- const isClosed = incident.estado !== 0;
+
+   const isClosed = incident.estado !== 0;
 const parentListName = isClosed ? 'Cerradas' : 'Abiertas';
 
 const buttonsVisibility = {
@@ -64,7 +69,8 @@ const { showVolver, showResponder, showCerrar, showReabrir } =
     showCerrar: true,
     showReabrir: true,
   };
-  
+
+
   if (!incident || typeof incident !== 'object') {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -80,7 +86,45 @@ const { showVolver, showResponder, showCerrar, showReabrir } =
     );
   }
 
+  // --- Lógica para el encabezado dinámico ---
+  let HeaderIconComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+  let headerTitle: string;
+  // La pantalla a la que volverás (en este caso, 'IncidentList' para todas las listas)
+  let navigateBackScreen: 'IncidentList' = 'IncidentList'; 
 
+  switch (cameFromType) { //
+    case 'Abiertas':
+      HeaderIconComponent = AbiertasIcon;
+      headerTitle = 'Abiertas';
+      break;
+    case 'Cerradas':
+      HeaderIconComponent = CerradasIcon;
+      headerTitle = 'Cerradas';
+      break;
+    case 'Globales':
+      HeaderIconComponent = GlobalesIcon;
+      headerTitle = 'Globales';
+      break;
+    case 'Expres': // Si también tienes un tipo 'Expres' que navega aquí
+      HeaderIconComponent = AbiertasIcon; // O un icono específico para 'Expres'
+      headerTitle = 'Expres';
+      break;
+    default:
+      // Fallback si cameFromType no es reconocido (o no se proporciona)
+      HeaderIconComponent = HomeIcon; // O un icono genérico
+      headerTitle = 'Detalle';
+      // Considera a dónde ir si cameFromType es nulo/inválido
+      // navigation.goBack() podría ser una alternativa aquí si no hay una lista específica.
+      break;
+  }
+  // --- Fin lógica encabezado dinámico ---
+
+  // Ocultar el header por defecto del Stack Navigator
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, [navigation]);
 
   const toggleExpand = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -99,7 +143,8 @@ const { showVolver, showResponder, showCerrar, showReabrir } =
   };
 
   const renderDetailSection = (title: string, content: string | null | undefined, linkUrl?: string | null) => {
-    if (!content && !linkUrl) return null;
+    // Permitir mostrar "Sin archivo adjunto" incluso si content y linkUrl son nulos
+    if (!content && !linkUrl && title !== 'Archivo Adjunto') return null; 
     return (
       <View style={styles.detailSection}>
         <Text style={styles.detailTitle}>{title}</Text>
@@ -115,42 +160,44 @@ const { showVolver, showResponder, showCerrar, showReabrir } =
     );
   };
 
-  const cardTitle = incident.marca && incident.modelo ? `${incident.marca} ${incident.modelo}` : incident.vehiculo?.trim() || incident.titulo || 'Detalle';
+  const cardTitle = incident.marca && incident.modelo ? `${incident.marca} ${incident.modelo}` : incident.vehiculo?.trim() || incident.titulo || 'Incidencia';
   const cardSubtitle = incident.titulo === cardTitle ? (incident.sintomas || '') : (incident.titulo || '');
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.topHeaderContainer}>
-        {topHeaderButtons.map((button, index) => {
-          const Icon = button.iconComponent;
-          const isFirst = index === 0;
-          const isLast = index === topHeaderButtons.length - 1;
-          return (
-            <TouchableOpacity
-              key={button.id}
-              style={[
-                styles.topHeaderButton,
-                isFirst && styles.firstButton,
-                isLast && styles.lastButton,
-                !isFirst && !isLast && styles.middleButton
-              ]}
-              onPress={() => navigation.navigate('Home')}
-              activeOpacity={0.7}
-            >
-              <Icon width={headerIconSize} height={headerIconSize} fill={isFirst ? '#2c4391' : '#ffffff'} />
-              <Text style={[styles.topHeaderText, isFirst && { color: '#000000' }, !isFirst && { color: '#ffffff' }]}>{button.title}</Text>
-            </TouchableOpacity>
-          );
-        })}
+        {/* Botón Dinámico: Vuelve a la lista de origen */}
+        <TouchableOpacity
+          style={[styles.topHeaderButton, styles.firstButton]}
+          onPress={() => navigation.navigate(navigateBackScreen, { type: cameFromType })} //
+          activeOpacity={0.7}
+        >
+          <HeaderIconComponent width={headerIconSize} height={headerIconSize} fill={'#2c4391'} />
+          <Text style={[styles.topHeaderText, { color: '#000000' }]}>{headerTitle}</Text>
+        </TouchableOpacity>
+
+        {/* Botón Estático: Inicio */}
+        <TouchableOpacity
+          key="Home" // Asegura una key única si no se mapea un array
+          style={[
+            styles.topHeaderButton,
+            styles.lastButton // Asumiendo que es el último (y único) botón estático
+          ]}
+          onPress={() => navigation.navigate('Home')}
+          activeOpacity={0.7}
+        >
+          <HomeIcon width={headerIconSize} height={headerIconSize} fill={'#ffffff'} />
+          <Text style={[styles.topHeaderText, { color: '#ffffff' }]}>Inicio</Text>
+        </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.card}>
           <TouchableOpacity style={styles.mainCard} onPress={toggleExpand} activeOpacity={0.9}>
             <View style={styles.cardHeader}>
               <View style={styles.cardHeaderText}>
-                <Text style={styles.cardTitle}>{cardTitle}</Text>
-                <Text style={styles.cardSubtitle}>{cardSubtitle}</Text>
+                <Text style={styles.cardTitle} numberOfLines={1}>{cardTitle}</Text>
+                <Text style={styles.cardSubtitle} numberOfLines={1}>{cardSubtitle}</Text>
               </View>
               <Text style={styles.cardIconText}>-</Text>
             </View>
@@ -190,28 +237,26 @@ const { showVolver, showResponder, showCerrar, showReabrir } =
               <VolverIcon width={50} height={50} />
               <Text style={styles.backButtonText}>Volver</Text>
             </TouchableOpacity>
-            )}
+              )}
              {showResponder && (
             <TouchableOpacity style={styles.backButton} onPress={() => setModalVisible(true)} activeOpacity={0.7}>
               <RefreshIcon width={50} height={50} />
               <Text style={styles.backButtonText}>Responder</Text>
             </TouchableOpacity>
-             )}
+               )}
 
             {showCerrar && (
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
               <CerrarIcon width={50} height={50} />
               <Text style={styles.backButtonText}>Cerrar</Text>
-            </TouchableOpacity>
+            </TouchableOpacity>         
             )}
-
               {showReabrir && (
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
               <CerrarIcon width={50} height={50} />
               <Text style={styles.backButtonText}>Reabrir Incidencia</Text>
             </TouchableOpacity>
             )}
-            
           </View>
         </View>
       </ScrollView>
@@ -242,12 +287,14 @@ const { showVolver, showResponder, showCerrar, showReabrir } =
                              <CheckIcon width={60} height={60} />
                         </TouchableOpacity>
                     </View>
-            </View>
+          </View>
         </View>
       </Modal>
     </SafeAreaView>
   );
 };
+
+
 
 const styles = StyleSheet.create({
     safeArea: {

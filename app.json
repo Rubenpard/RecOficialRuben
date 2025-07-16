@@ -1,4 +1,12 @@
 {
-  "name": "recoficial",
-  "displayName": "recoficial"
+  "expo": {
+    "name": "recoficial",
+    "slug": "recoficial",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "sdkVersion": "53.0.0",
+    "platforms": ["ios", "android"],
+    "jsEngine": "hermes"
+  },
+  "name": "recoficial"
 }

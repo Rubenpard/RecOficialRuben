@@ -1,4 +1,5 @@
 // src/navigation/MainStackNavigator.tsx
+
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -13,9 +14,13 @@ import IncidentListScreen from '../screens/IncidentListScreen';
 import IncidentDetailScreen from '../screens/IncidentDetailScreen';
 import IncidentCreationStackNavigator from './IncidentCreationStackNavigator'; // El flujo anidado
 import FormationDetailScreen from '../screens/FormationDetailScreen'; 
+
 // Importa los headers personalizados (¡LOS CREAREMOS A CONTINUACIÓN!)
 import MainHeader from './headers/MainHeader';
 import InnerHeader from './headers/InnerHeader';
+
+// Importa el tipo AsistenciaListItem para usarlo en los parámetros
+import type { AsistenciaListItem } from '../types/asistencia'; 
 
 // --- Tipos para este Stack Principal ---
 // Incluye TODAS las pantallas y los parámetros que reciben
@@ -27,8 +32,11 @@ export type MainStackParamList = {
   AIChat: undefined;
   CallMe: undefined;
   IncidentList: { type: 'Abiertas' | 'Cerradas' | 'Globales' | 'Expres' };
-  IncidentDetail: { incidentId: number | string };
+  // *** CAMBIO CRÍTICO AQUÍ: Actualiza los parámetros para IncidentDetail ***
+  IncidentDetail: { incident: AsistenciaListItem; cameFromType: 'Abiertas' | 'Cerradas' | 'Globales' | 'Expres' }; //
+  // *******************************************************************
   IncidentCreation: undefined; // Para lanzar el flujo de creación
+  FormationDetail: undefined; // Asegúrate de que el tipo sea consistente si recibe parámetros
   // Añade otras si las tienes
 };
 
@@ -86,7 +94,7 @@ const MainStackNavigator: React.FC = () => {
         name="IncidentCreation" // Lanza el flujo de creación
         component={IncidentCreationStackNavigator}
          options={{ headerShown: false }}/>
- <Stack.Screen
+      <Stack.Screen
         name="FormationDetail" // <-- El nombre debe ser EXACTO
         component={FormationDetailScreen} // <-- Asegúrate de importar FormationDetailScreen al principio del archivo
         options={{ headerShown: false }}/>
