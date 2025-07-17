@@ -15,10 +15,16 @@ export type RootStackParamList = { Login: undefined; MainApp: undefined; };
 // Crea el Stack Raíz USANDO LA FUNCIÓN IMPORTADA
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+
+
 // Componente Interno AppNavigator
 const AppNavigator: React.FC = () => {
     const { isAuthenticated, isLoading } = useAuth();
-    if (isLoading) { return ( <View style={styles.loadingContainer}> <ActivityIndicator size="large" color="#0033A0"/> </View> ); }
+      if (isLoading) { return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0033A0"/>
+      </View> );
+    }
 
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -31,6 +37,8 @@ const AppNavigator: React.FC = () => {
         </Stack.Navigator>
     );
 };
+
+
 
 // Componente App principal
 function App(): React.JSX.Element {
